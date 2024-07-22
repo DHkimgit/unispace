@@ -75,12 +75,16 @@ public class RoomDto {
     @Getter
     @Setter
     @AllArgsConstructor
-    public static class ReservationTimeSlot{
+    public static class ReservationTimeSlot implements Comparable<ReservationTimeSlot>{
         private Long slotId;
         @JsonFormat(pattern = "HH:mm:ss")
         private LocalTime startTime;
         @JsonFormat(pattern = "HH:mm:ss")
         private LocalTime endTime;
+        @Override
+        public int compareTo(ReservationTimeSlot timeSlot){
+            return slotId.compareTo(timeSlot.slotId);
+        }
 
     }
 }

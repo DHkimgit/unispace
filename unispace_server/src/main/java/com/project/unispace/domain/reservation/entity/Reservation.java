@@ -4,9 +4,12 @@ import com.project.unispace.domain.BaseEntity;
 import com.project.unispace.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -14,6 +17,7 @@ import java.util.Set;
 
 @Entity
 @Getter
+@NoArgsConstructor
 public class Reservation extends BaseEntity {
     @Id
     @GeneratedValue
@@ -22,6 +26,10 @@ public class Reservation extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_ID")
     private User reservedBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ROOM_ID")
+    private Room room;
 
     private LocalDate reservationDate;
 
@@ -35,6 +43,7 @@ public class Reservation extends BaseEntity {
     private String description;
 
     // 예약시 추가되는 친구 데이터 저장
+    @Setter
     @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ReservationFriend> reservationFriends = new HashSet<>();
 
@@ -42,14 +51,41 @@ public class Reservation extends BaseEntity {
     @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL)
     private List<ReservationInquiry> inquiries = new ArrayList<>();
 
+    //=====생성 메서드=====//
+
+    public Reservation(User reservedBy, Room room, LocalDate reservationDate, ReservationTimeSlot timeSlot, ReservationStatus status, String description) {
+        this.reservedBy = reservedBy;
+        this.room = room;
+        this.reservationDate = reservationDate;
+        this.timeSlot = timeSlot;
+        this.status = status;
+        this.description = description;
+    }
+
+    public static Reservation createReservation(User reservedBy, Room room, LocalDate reservationDate, ReservationTimeSlot timeSlot, String description) {
+        if(room.getReservationPolicy().isRequireApproval()) {
+            return new Reservation(reservedBy, room, reservationDate, timeSlot, ReservationStatus.PENDING, description);
+        }
+        else{
+            return new Reservation(reservedBy, room, reservationDate, timeSlot, ReservationStatus.ACCEPTED, description);
+        }
+    }
+
     //=====비즈니스 로직=====//
-    public void addFriend(User friend) {
+    public ReservationFriend addFriend(User friend) {
         ReservationFriend reservationFriend = ReservationFriend.createReservationFriend(this, friend);
         this.reservationFriends.add(reservationFriend);
+        return reservationFriend;
     }
 
     // 친구 제거 메서드
     public void removeFriend(User friend) {
         this.reservationFriends.removeIf(rf -> rf.getFriend().equals(friend));
+    }
+
+
+    // 예약 가능한 날짜인지 확인
+    public void checkAvailable(){
+
     }
 }

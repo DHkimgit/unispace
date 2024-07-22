@@ -75,9 +75,6 @@ public class InitDb {
             departmentRepository.save(department4);
             Department department5 = Department.createCollegeDepartment("신소재공학과", false, DepartmentAffiliationType.COLLEGE, college2);
             departmentRepository.save(department5);
-//            college1.addDepartment(department1);
-//            college1.addDepartment(department2);
-//            college1.addDepartment(department3);
             universityRepository.save(university1);
             String encodedPassword = passwordEncoder.encode("1q2w3e4r!");
             User user1 = User.createUserWithCollege("21-789456", "user1", encodedPassword,
@@ -177,6 +174,79 @@ public class InitDb {
             policyB.addAvailableDayPolicy(availableDaysB);
             policyB.generateTimeSlot();
             reservationPolicyRepository.save(policyB);
+
+            Room roomA3 = Room.createRoom("103호", "강의실", buildingA);
+            Room roomA4 = Room.createRoom("104호", "강의실", buildingA);
+
+            roomRepository.save(roomA3);
+            roomRepository.save(roomA4);
+
+            ReservationPolicy policyA3 = ReservationPolicy.createPolicy(roomA3, true, false, 2, LocalTime.of(8, 0, 0), LocalTime.of(20, 0, 0), 3);
+            CollegePolicy cpA3_1 = CollegePolicy.createPolicy(policyA3, college1);
+            CollegePolicy cpA3_2 = CollegePolicy.createPolicy(policyA3, college2);
+
+            Set<CollegePolicy> collegePoliciesA3 = new HashSet<>();
+            collegePoliciesA3.add(cpA3_1);
+            collegePoliciesA3.add(cpA3_2);
+            policyA3.setCollegePolicies(collegePoliciesA3);
+
+            Set<DayOfWeek> availableDaysA3 = new HashSet<>();
+            availableDaysA3.add(DayOfWeek.MONDAY);
+            availableDaysA3.add(DayOfWeek.TUESDAY);
+            availableDaysA3.add(DayOfWeek.WEDNESDAY);
+            availableDaysA3.add(DayOfWeek.THURSDAY);
+            availableDaysA3.add(DayOfWeek.FRIDAY);
+
+            policyA3.addAvailableDayPolicy(availableDaysA3);
+
+            policyA3.generateTimeSlot();
+
+            reservationPolicyRepository.save(policyA3);
+
+            // Creating new reservation policies for roomA4
+            ReservationPolicy policyA4 = ReservationPolicy.createPolicy(roomA4, true, false, 2, LocalTime.of(8, 0, 0), LocalTime.of(22, 0, 0), 3);
+
+            policyA4.addAvailableDayPolicy(availableDaysA3);
+
+            policyA4.generateTimeSlot();
+
+            reservationPolicyRepository.save(policyA4);
+
+            Room roomB3 = Room.createRoom("360호", "강의실", buildingB);
+            Room roomB4 = Room.createRoom("대회의실", "회의실", buildingB);
+
+            roomRepository.save(roomB3);
+            roomRepository.save(roomB4);
+
+            ReservationPolicy policyB3 = ReservationPolicy.createPolicy(roomB3, true, false, 2, LocalTime.of(8, 0, 0), LocalTime.of(20, 0, 0), 3);
+            CollegePolicy cpB3_1 = CollegePolicy.createPolicy(policyB3, college2);
+
+            Set<CollegePolicy> collegePoliciesB3 = new HashSet<>();
+            collegePoliciesB3.add(cpB3_1);
+            policyB3.setCollegePolicies(collegePoliciesB3);
+
+            Set<DayOfWeek> availableDaysB3 = new HashSet<>();
+            availableDaysA3.add(DayOfWeek.MONDAY);
+            availableDaysA3.add(DayOfWeek.TUESDAY);
+            availableDaysA3.add(DayOfWeek.WEDNESDAY);
+            availableDaysA3.add(DayOfWeek.THURSDAY);
+            availableDaysA3.add(DayOfWeek.FRIDAY);
+
+            policyB3.addAvailableDayPolicy(availableDaysB3);
+
+            policyB3.generateTimeSlot();
+
+            reservationPolicyRepository.save(policyB3);
+
+            // Creating new reservation policies for roomB4
+            ReservationPolicy policyB4 = ReservationPolicy.createPolicy(roomB4, true, false, 1, LocalTime.of(10, 0, 0), LocalTime.of(18, 0, 0), 3);
+
+            policyB4.addAvailableDayPolicy(availableDaysB3);
+
+            policyB4.generateTimeSlot();
+
+            reservationPolicyRepository.save(policyB4);
+
         }
 
 

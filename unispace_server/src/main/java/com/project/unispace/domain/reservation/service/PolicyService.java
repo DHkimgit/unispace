@@ -14,8 +14,10 @@ import com.project.unispace.domain.university.entity.Department;
 import com.project.unispace.domain.university.repository.CollegeRepository;
 import com.project.unispace.domain.university.repository.DepartmentRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.Transient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -30,6 +32,7 @@ public class PolicyService {
     private final CollegeRepository collegeRepository;
     private final DepartmentRepository departmentRepository;
 
+    @Transactional
     public Long createPolicy(PolicyDto.CreatePolicy request){
         return roomRepository.findById(request.getRoomId().longValue())
                 .map(room -> {
@@ -49,6 +52,7 @@ public class PolicyService {
                         policy.setCollegePolicies(collegePolicies);
                         System.out.println("collegePolicies = " + collegePolicies);
                     }
+
                     if(!request.getDepartmentRestriction().isEmpty()) {
                         Set<DepartmentPolicy> departmentPolicies = request.getDepartmentRestriction().stream()
                                 .map(departmentId -> {

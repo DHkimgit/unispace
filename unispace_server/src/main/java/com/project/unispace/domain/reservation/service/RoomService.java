@@ -7,10 +7,13 @@ import com.project.unispace.domain.reservation.entity.ReservationPolicy;
 import com.project.unispace.domain.reservation.entity.Room;
 import com.project.unispace.domain.reservation.repository.BuildingRepository;
 import com.project.unispace.domain.reservation.repository.RoomRepository;
+import com.project.unispace.domain.user.entity.User;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.*;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -42,7 +45,29 @@ public class RoomService {
                     List<RoomDto.DepartmentRestrictionPolicy> departmentRestrictionPolicies = room.getReservationPolicy().getDepartmentPolicies().stream()
                             .map(departmentPolicy -> new RoomDto.DepartmentRestrictionPolicy(departmentPolicy.getDepartment().getId(), departmentPolicy.getDepartment().getName())).toList();
                     List<RoomDto.ReservationTimeSlot> timeSlots = room.getReservationPolicy().getTimeSlots().stream()
-                            .map(timeSlot -> new RoomDto.ReservationTimeSlot(timeSlot.getId(), timeSlot.getStartTime(), timeSlot.getEndTime())).toList();
+                            .map(timeSlot -> new RoomDto.ReservationTimeSlot(timeSlot.getId(), timeSlot.getStartTime(), timeSlot.getEndTime()))
+                            .sorted(Comparator.comparing(RoomDto.ReservationTimeSlot::getSlotId))
+                            .toList();
+                    RoomDto.ReservationPolicy reservationPolicy = new RoomDto.ReservationPolicy(room.getReservationPolicy().isRequireApproval(),
+                            room.getReservationPolicy().getOpenTime(), room.getReservationPolicy().getReserveCloseTime(),
+                            room.getReservationPolicy().getMaxReservationHours(), room.getReservationPolicy().getAvailableDays(),
+                            timeSlots, collegeRestrictionPolicies, departmentRestrictionPolicies);
+                    return new RoomDto.RoomResponse(room.getBuilding().getId(), room.getBuilding().getName(),
+                            room.getName(), room.getDescription(), room.isAvailable(), reservationPolicy);
+                }).collect(Collectors.toList());
+    }
+
+    public List<RoomDto.RoomResponse> getAllRoomByUser(User user) {
+        return roomRepository.findAllRoomAvailableToUser(user).stream()
+                .map(room -> {
+                    List<RoomDto.CollegeRestrictionPolicy> collegeRestrictionPolicies = room.getReservationPolicy().getCollegePolicies().stream()
+                            .map(collegePolicy -> new RoomDto.CollegeRestrictionPolicy(collegePolicy.getCollege().getId(), collegePolicy.getCollege().getName())).toList();
+                    List<RoomDto.DepartmentRestrictionPolicy> departmentRestrictionPolicies = room.getReservationPolicy().getDepartmentPolicies().stream()
+                            .map(departmentPolicy -> new RoomDto.DepartmentRestrictionPolicy(departmentPolicy.getDepartment().getId(), departmentPolicy.getDepartment().getName())).toList();
+                    List<RoomDto.ReservationTimeSlot> timeSlots = room.getReservationPolicy().getTimeSlots().stream()
+                            .map(timeSlot -> new RoomDto.ReservationTimeSlot(timeSlot.getId(), timeSlot.getStartTime(), timeSlot.getEndTime()))
+                            .sorted(Comparator.comparing(RoomDto.ReservationTimeSlot::getSlotId))
+                            .toList();
                     RoomDto.ReservationPolicy reservationPolicy = new RoomDto.ReservationPolicy(room.getReservationPolicy().isRequireApproval(),
                             room.getReservationPolicy().getOpenTime(), room.getReservationPolicy().getReserveCloseTime(),
                             room.getReservationPolicy().getMaxReservationHours(), room.getReservationPolicy().getAvailableDays(),
@@ -57,8 +82,6 @@ public class RoomService {
         room.definePolicy(policy);
         return room.getId();
     }
-
-
 
     @Data
     @Getter

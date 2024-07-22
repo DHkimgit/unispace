@@ -10,10 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Getter
@@ -32,7 +29,7 @@ public class ReservationPolicy extends BaseEntity {
     private boolean isOpenToPublic;
     // 예약 시 관리자의 승인이 필요한가?
     private boolean requireApproval;
-    // 최대 예약할 수 있는 시간 => 예약 타임 자동 생성이 가능한가?
+    // 한번에 예약할 수 있는 시간 => 예약 타임 자동 생성이 가능한가?
     private Integer maxReservationHours;
     // 시설 예약 시작 시간
     private LocalTime openTime;
@@ -40,6 +37,10 @@ public class ReservationPolicy extends BaseEntity {
     private LocalTime reserveCloseTime;
     // 며칠 전부터 예약이 가능한지
     private Integer minDaysBeforeReservation;
+    //college 제한이 존재하는가?
+    private boolean collegeRestrict;
+    //department 제한이 존재하는가?
+    private boolean departmentRestrict;
 
     // 예약 가능 시간대 자동 생성
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "reservationPolicy", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -51,11 +52,10 @@ public class ReservationPolicy extends BaseEntity {
     @Column(name = "AVAILABLE_DAYS")
     private Set<DayOfWeek> availableDays = new HashSet<>();
 
-    @Setter
     @OneToMany(mappedBy = "reservationPolicy", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CollegePolicy> collegePolicies = new HashSet<>();
 
-    @Setter
+
     @OneToMany(mappedBy = "reservationPolicy", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<DepartmentPolicy> departmentPolicies = new HashSet<>();
 
@@ -85,6 +85,8 @@ public class ReservationPolicy extends BaseEntity {
         this.openTime = openTime;
         this.reserveCloseTime = reserveCloseTime;
         this.minDaysBeforeReservation = minDaysBeforeReservation;
+        this.departmentRestrict = false;
+        this.collegeRestrict = false;
     }
 
     public static ReservationPolicy createPolicy(Room room, boolean isOpenToPublic, boolean requireApproval, Integer maxReservationHours, LocalTime openTime, LocalTime reserveCloseTime, Integer minDaysBeforeReservation){
@@ -104,19 +106,38 @@ public class ReservationPolicy extends BaseEntity {
         while ((currentTime.isBefore(reserveCloseTime) || currentTime.equals(reserveCloseTime))
                 && iteration < maxIterations) {
             LocalTime endTime = currentTime.plusHours(maxReservationHours);
+
             if (endTime.isAfter(reserveCloseTime)) {
                 endTime = reserveCloseTime;
             }
-            if(currentTime == endTime) break;
-            timeSlots.add(ReservationTimeSlot.createTimeSlot(this, currentTime, endTime));
-            System.out.println("currentTime = " + currentTime + " endTime = " + endTime);
+
+            if (currentTime.equals(endTime) || endTime.equals(LocalTime.of(0, 0, 0))) break;
+
+            ReservationTimeSlot timeSlot = ReservationTimeSlot.createTimeSlot(this, currentTime, endTime);
+            timeSlots.add(timeSlot);
+            System.out.println("currentTime = " + currentTime + " endTime = " + endTime + " iter = " + iteration);
             currentTime = endTime;
             iteration++;
 
         }
 
-        if (iteration >= maxIterations) {
-            throw new IllegalStateException("Too many time slots generated. Please check your input parameters.");
-        }
+        timeSlots.sort(Comparator.comparing(ReservationTimeSlot::getStartTime));
+
+//        if (iteration >= maxIterations) {
+//            System.out.println("iteration = " + iteration);
+//            throw new IllegalStateException("Too many time slots generated. Please check your input parameters.");
+//        }
     }
+    public void setDepartmentPolicies(Set<DepartmentPolicy> departmentPolicies) {
+        this.departmentPolicies = departmentPolicies;
+        this.departmentRestrict = true;
+    }
+    public void addDepartmentPolicies(DepartmentPolicy departmentPolicy) {
+        this.departmentPolicies.add(departmentPolicy);
+    }
+    public void setCollegePolicies(Set<CollegePolicy> collegePolicies) {
+        this.collegePolicies = collegePolicies;
+        this.collegeRestrict = true;
+    }
+
 }

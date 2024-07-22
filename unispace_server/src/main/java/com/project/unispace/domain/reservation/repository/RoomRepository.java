@@ -7,12 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
-public interface RoomRepository extends JpaRepository<Room, Long> {
-//    @Query("SELECT r, r.building, r.reservationPolicy FROM Room r " +
-//            "JOIN FETCH r.building.university u " +
-//            "WHERE u.id = :univId AND r.isAvailable = true")
-//    List<Room> getAllRoomByUnivId(@Param("univId") Long univId);
-
+public interface RoomRepository extends JpaRepository<Room, Long>, RoomCustomRepository {
     @Query("SELECT DISTINCT r FROM Room r " +
             "JOIN FETCH r.building b " +
             "JOIN FETCH b.university u " +
@@ -22,7 +17,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
             "LEFT JOIN FETCH rp.departmentPolicies dp " +
             "LEFT JOIN FETCH dp.department " +
             "LEFT JOIN FETCH rp.timeSlots " +
-            //"LEFT JOIN FETCH rp.availableDays " +
+            "LEFT JOIN FETCH rp.availableDays " +
             "WHERE u.id = :univId AND r.isAvailable = true")
     List<Room> getAllRoomByUnivId(@Param("univId") Long univId);
 }
