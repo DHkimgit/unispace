@@ -18,7 +18,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.project.unispace.domain.user.dto.UserDto.*;
 
@@ -94,5 +96,37 @@ public class UserService {
         User findUser = userRepository.findUserByNickname(nickname).orElseThrow(() -> new EntityNotFoundException("No Exist User with such nickname"));
 
         return new SearchResponse(findUser.getId(), findUser.getNickname());
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<User> findUserByLoginId(String loginId){
+        return userRepository.findUserByLoginId(loginId);
+    }
+
+    public List<UserDto.NickNameSearchResponse> searchUsersByNickname(String nickname) {
+        List<User> users = userRepository.searchUsersByNickname(nickname);
+        if(users.isEmpty()) throw new EntityNotFoundException();
+        else{
+            return users.stream()
+                    .map(user -> {
+                        return new UserDto.NickNameSearchResponse(user.getId(), user.getNickname(),
+                                user.getUniversity().getId(), user.getUniversity().getName());
+                    })
+                    .collect(Collectors.toList());
+        }
+    }
+
+    public UserDataResponse getUserDataById(Long userId) {
+        User user = userRepository.findUserById(userId);
+        return UserDataResponse.builder()
+                .userName(user.getUsername())
+                .userId(userId)
+                .universityId(user.getUniversity().getId())
+                .universityName(user.getUniversity().getName())
+                .collegeName(user.getCollege().getName())
+                .collegeId(user.getCollege().getId())
+                .departmentName(user.getDepartment().getName())
+                .departmentId(user.getDepartment().getId())
+                .build();
     }
 }

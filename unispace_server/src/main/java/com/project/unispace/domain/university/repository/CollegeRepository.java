@@ -11,6 +11,7 @@ import java.util.List;
 
 public interface CollegeRepository extends JpaRepository<College, Long> {
     List<College> findByUniversity(University university);
-//    @Query("select c from College c where c.university.id = :university_id")
-//    List<College> findCollegeByUniversityId(@Param("university_id") Collection<Long> university_id);
+
+    @Query("select c from College c where c.university.id = :university_id")
+    List<College> findCollegeByUniversityId(@Param("university_id") Long university_id);
 }

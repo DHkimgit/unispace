@@ -1,6 +1,7 @@
 package com.project.unispace.domain.university.service;
 
 import com.project.unispace.domain.university.dto.CollegeDto;
+import com.project.unispace.domain.university.dto.CollegeDto.CollegeResponse;
 import com.project.unispace.domain.university.entity.College;
 import com.project.unispace.domain.university.entity.University;
 import com.project.unispace.domain.university.repository.CollegeRepository;
@@ -43,7 +44,7 @@ public class CollegeService {
         University university = user.getUniversity();
         List<College> colleges = collegeRepository.findByUniversity(university);
         return new CollegeDto.CollegeListResponse(colleges.stream()
-                .map(college -> new CollegeDto.CollegeResponse(college.getId(), college.getName()))
+                .map(college -> new CollegeResponse(college.getId(), college.getName()))
                 .collect(Collectors.toList()));
     }
 
@@ -53,8 +54,16 @@ public class CollegeService {
         University university = user.getUniversity();
         List<College> colleges = collegeRepository.findByUniversity(university);
         return new CollegeDto.CollegeListResponse(colleges.stream()
-                .map(college -> new CollegeDto.CollegeResponse(college.getId(), college.getName()))
+                .map(college -> new CollegeResponse(college.getId(), college.getName()))
                 .collect(Collectors.toList()));
+    }
+
+    @Transactional(readOnly = true)
+    public List<CollegeResponse> getCollegeByUniversityId(Long universityId) {
+        return collegeRepository.findCollegeByUniversityId(universityId).stream()
+                .map(college -> {
+                    return new CollegeResponse(college.getId(), college.getName());
+                }).collect(Collectors.toList());
     }
 
 }

@@ -43,18 +43,11 @@ public class CollegeDto {
         // getter
     }
 
-    @Getter
-    @Builder
-    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    @Data
+    @Getter @Setter
+    @AllArgsConstructor
     public static class CollegeResponse {
-        private Long id;
-        private String name;
-
-        public CollegeResponse(Long id, String name) {
-            this.id = id;
-            this.name = name;
-        }
-
-        // getters
+        private Long collegeId;
+        private String collegeName;
     }
 }

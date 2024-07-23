@@ -115,4 +115,28 @@ public class UserDto {
         private String userNickname;
     }
 
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    public static class NickNameSearchResponse{
+        private Long userId;
+        private String userNickname;
+        private Long univId;
+        private String universityName;
+    }
+
+    @Data
+    @Getter @Setter
+    @Builder
+    public static class UserDataResponse {
+        private Long userId;
+        private String userName;
+        private Long universityId;
+        private String universityName;
+        private Long collegeId;
+        private String collegeName;
+        private Long departmentId;
+        private String departmentName;
+    }
+
 }
