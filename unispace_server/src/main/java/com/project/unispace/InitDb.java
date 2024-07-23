@@ -61,6 +61,8 @@ public class InitDb {
         public void dbInit1(){
             University university1 = University.createUniversity("한국기술교육대학교", "천안시 동남구");
             universityRepository.save(university1);
+            University university2 = University.createUniversity("서울대학교", "서울시 관악구");
+            universityRepository.save(university2);
             College college1 = College.createCollege(university1, "전기전자정보통신공학부");
             collegeRepository.save(college1);
             College college2 = College.createCollege(university1, "에너지신소재공학부");
