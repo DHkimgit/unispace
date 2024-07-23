@@ -125,4 +125,27 @@ public class ReservationDto {
         private LocalTime startTime;
         private LocalTime endTime;
     }
+
+    @Data
+    @Getter
+    @Setter
+    @Builder
+    @AllArgsConstructor
+    public static class LatestReservationResponse {
+        private Long userId;
+        private Long timeSlotId;
+
+        private LocalDate reserveDate;
+
+        @JsonFormat(pattern = "HH:mm:ss")
+        private LocalTime startTime;
+
+        @JsonFormat(pattern = "HH:mm:ss")
+        private LocalTime endTime;
+
+        private Long roomId;
+        private String buildingName;
+        private String roomName;
+
+    }
 }

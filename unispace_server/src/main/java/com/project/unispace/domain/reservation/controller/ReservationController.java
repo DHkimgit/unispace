@@ -1,6 +1,7 @@
 package com.project.unispace.domain.reservation.controller;
 
 import com.project.unispace.domain.reservation.dto.ReservationDto;
+import com.project.unispace.domain.reservation.entity.Reservation;
 import com.project.unispace.domain.reservation.service.ReservationService;
 import com.project.unispace.domain.reservation.service.RoomService;
 import com.project.unispace.domain.user.dto.UserDetailsImpl;
@@ -47,6 +48,27 @@ public class ReservationController {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         User user = userDetails.getUser();
         return ResponseEntity.ok(new Result<> (200, "ok", roomService.getAllRoomByUser(user)));
+    }
+
+    @GetMapping("/reservation/rooms/top3")
+    public ResponseEntity<?> getThreeAvailableRoomToUser(Authentication authentication) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        User user = userDetails.getUser();
+        return ResponseEntity.ok(new Result<> (200, "ok", roomService.getThreeRoomByUser(user)));
+    }
+
+    @GetMapping("/reservation/latest")
+    public ResponseEntity<?> getClosestReservationAfterToday(Authentication authentication) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        User user = userDetails.getUser();
+        Reservation response = reservationService.getClosestReservation(user.getId());
+
+        if (response != null) {
+            ReservationDto.LatestReservationResponse result = reservationService.getClosestReservationResponse(response, user.getId());
+            return ResponseEntity.ok(new Result<>(200, "ok", result));
+        } else {
+            return ResponseEntity.ok(new Result<>(200, "ok", null)); // 예약이 없을 경우 null 반환
+        }
     }
 
     @Data

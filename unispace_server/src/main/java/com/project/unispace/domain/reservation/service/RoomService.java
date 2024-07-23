@@ -77,6 +77,26 @@ public class RoomService {
                 }).collect(Collectors.toList());
     }
 
+    public List<RoomDto.RoomResponse> getThreeRoomByUser(User user) {
+        return roomRepository.findThreeRoomAvailableToUser(user).stream()
+                .map(room -> {
+                    List<RoomDto.CollegeRestrictionPolicy> collegeRestrictionPolicies = room.getReservationPolicy().getCollegePolicies().stream()
+                            .map(collegePolicy -> new RoomDto.CollegeRestrictionPolicy(collegePolicy.getCollege().getId(), collegePolicy.getCollege().getName())).toList();
+                    List<RoomDto.DepartmentRestrictionPolicy> departmentRestrictionPolicies = room.getReservationPolicy().getDepartmentPolicies().stream()
+                            .map(departmentPolicy -> new RoomDto.DepartmentRestrictionPolicy(departmentPolicy.getDepartment().getId(), departmentPolicy.getDepartment().getName())).toList();
+                    List<RoomDto.ReservationTimeSlot> timeSlots = room.getReservationPolicy().getTimeSlots().stream()
+                            .map(timeSlot -> new RoomDto.ReservationTimeSlot(timeSlot.getId(), timeSlot.getStartTime(), timeSlot.getEndTime()))
+                            .sorted(Comparator.comparing(RoomDto.ReservationTimeSlot::getSlotId))
+                            .toList();
+                    RoomDto.ReservationPolicy reservationPolicy = new RoomDto.ReservationPolicy(room.getReservationPolicy().isRequireApproval(),
+                            room.getReservationPolicy().getOpenTime(), room.getReservationPolicy().getReserveCloseTime(),
+                            room.getReservationPolicy().getMaxReservationHours(), room.getReservationPolicy().getAvailableDays(),
+                            timeSlots, collegeRestrictionPolicies, departmentRestrictionPolicies);
+                    return new RoomDto.RoomResponse(room.getBuilding().getId(), room.getBuilding().getName(),
+                            room.getName(), room.getDescription(), room.isAvailable(), reservationPolicy);
+                }).collect(Collectors.toList());
+    }
+
     public Long definePolicy(ReservationPolicy policy, Long roomId) {
         Room room = roomRepository.findById(roomId).orElseThrow();
         room.definePolicy(policy);

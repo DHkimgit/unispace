@@ -1,10 +1,7 @@
 package com.project.unispace.domain.reservation.service;
 
 import com.project.unispace.domain.reservation.dto.ReservationDto;
-import com.project.unispace.domain.reservation.dto.ReservationDto.AvailableRoom;
-import com.project.unispace.domain.reservation.dto.ReservationDto.reservationFriend;
-import com.project.unispace.domain.reservation.dto.ReservationDto.reservationRequest;
-import com.project.unispace.domain.reservation.dto.ReservationDto.reservationResponse;
+import com.project.unispace.domain.reservation.dto.ReservationDto.*;
 import com.project.unispace.domain.reservation.entity.*;
 import com.project.unispace.domain.reservation.repository.*;
 import com.project.unispace.domain.university.entity.College;
@@ -203,5 +200,24 @@ public class ReservationService {
             }
         }
     }
+
+    // 현재 날짜 이후의 가장 최근의 예약 반환
+    public LatestReservationResponse getClosestReservationResponse(Reservation reservation, Long userId) {
+        return LatestReservationResponse.builder()
+                .userId(userId)
+                .timeSlotId(reservation.getTimeSlot().getId())
+                .reserveDate(reservation.getReservationDate())
+                .startTime(reservation.getTimeSlot().getStartTime())
+                .endTime(reservation.getTimeSlot().getEndTime())
+                .roomId(reservation.getRoom().getId())
+                .buildingName(reservation.getRoom().getBuilding().getName())
+                .roomName(reservation.getRoom().getName())
+                .build();
+
+    }
+    public Reservation getClosestReservation(Long userId) {
+        return reservationRepository.findClosestReservationAfterToday(userId);
+    }
+
 
 }
