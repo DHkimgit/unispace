@@ -4,8 +4,11 @@ import com.project.unispace.commons.dto.ErrorDto;
 import com.project.unispace.commons.exception.AlreadyExistsException;
 import com.project.unispace.domain.user.dto.FriendDto;
 import com.project.unispace.domain.user.dto.UserDetailsImpl;
+import com.project.unispace.domain.user.dto.UserDto;
 import com.project.unispace.domain.user.entity.FriendStatus;
 import com.project.unispace.domain.user.service.FriendService;
+import com.project.unispace.domain.user.service.UserService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -13,12 +16,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
 public class FriendController {
     private final FriendService friendService;
+    private final UserService userService;
 
     /*
      * 친구 요청 전송
@@ -34,6 +40,19 @@ public class FriendController {
             return ResponseEntity.status(409).body(new ErrorDto("Friend request already exists"));
         } catch (Exception e){
             return ResponseEntity.ok(new Result<>(404, e.getMessage()));
+        }
+    }
+
+    /*
+     * 닉네임으로 사용자를 조회
+     * */
+    @GetMapping("/friend/search/{nickname}")
+    public ResponseEntity<?> searchUser(@PathVariable String nickname) {
+        try{
+            List<UserDto.NickNameSearchResponse> searchResponses = userService.searchUsersByNickname(nickname);
+            return ResponseEntity.ok(new Result<>(200, "ok", searchResponses));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.ok(new Result<>(409, "error", "사용자가 존재하지 않습니다"));
         }
     }
 

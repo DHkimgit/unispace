@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface FriendRepository extends JpaRepository<Friend, Long> {
+public interface FriendRepository extends JpaRepository<Friend, Long>, FriendCustomRepository {
 
     @Query("SELECT f FROM Friend f " +
             "WHERE (f.requestUser.id = :userId1 AND f.receiveUser.id = :userId2) " +

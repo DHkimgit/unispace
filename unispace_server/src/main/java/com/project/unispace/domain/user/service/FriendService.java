@@ -86,8 +86,6 @@ public class FriendService {
                 .collect(Collectors.toList());
     }
 
-
-
     /*
      * 내가 전송한 요청 조회 - v1 <PENDING 상태만 조회>
      * */
@@ -130,7 +128,6 @@ public class FriendService {
                 .collect(Collectors.toList());
     }
 
-
     /*
     * 내가 받은 친구 요청 조회
     * */
@@ -141,17 +138,15 @@ public class FriendService {
     }
 
     public List<FriendDto.AcceptedFriendListResponse> getAcceptedFriendList(Long searchUserId){
-        return friendRepository.findByRequestUserAndStatus(searchUserId, FriendStatus.ACCEPTED).stream()
-                .map(friend -> {
-                    Long requestUserId = friend.getReceiveUser().getId();
-                    Friend oppositeFriendRequest = friendRepository.findByRequestUserAndReceiveUser(requestUserId, searchUserId).orElseThrow(() -> new EntityNotFoundException("No such Friend Request"));
-                    if(oppositeFriendRequest.getStatus() == FriendStatus.ACCEPTED){
-                        return new FriendDto.AcceptedFriendListResponse(requestUserId, oppositeFriendRequest.getRequestUser().getNickname(), FriendStatus.ACCEPTED);
+        return friendRepository.getAllFriends(searchUserId).stream()
+                .map(friendData -> {
+                    User friend = friendData.getReceiveUser();
+                    User user = friendData.getRequestUser();
+                    if(user.getUniversity().equals(friend.getUniversity())) {
+                        return new FriendDto.AcceptedFriendListResponse(friend.getId(), friend.getNickname(), friend.getUsername(), friendData.getStatus(), true);
                     }
-                    return null;
-                })
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+                    else return new FriendDto.AcceptedFriendListResponse(friend.getId(), friend.getNickname(), friend.getUsername(), friendData.getStatus(), false);
+                }).collect(Collectors.toList());
     }
 
     public FriendDto.FriendRequestAcceptResponse acceptFriendRequest(Long acceptUserId, Long requestUserId){
@@ -192,29 +187,3 @@ public class FriendService {
     }
 }
 
-//public List<SentFriendRequestResponse> getSentFriendRequest(Long userId) {
-//        return friendRepository.findByRequestUserAndStatus(userId, FriendStatus.PENDING).stream()
-//                .map(friend -> {
-//                    Long receiveUserId = friend.getReceiveUser().getId();
-//                    Optional<Friend> oppositeRequest = friendRepository.findByRequestUserAndReceiveUserAndStatus(receiveUserId, userId, FriendStatus.REJECTED);
-//                    if(oppositeRequest.isPresent()){
-//                        return new SentFriendRequestResponse(receiveUserId, friend.getReceiveUser().getNickname());
-//                    }
-//                    return null;
-//                })
-//                .filter(Objects::nonNull)
-//                .collect(Collectors.toList());
-//    }
-//    public List<SentFriendRequestResponse> getSentFriendRequestWithDto(Long userId) {
-//        return friendRepository.findSentFriendRequestsWithDto(userId);
-//    }
-//
-//    public List<SentFriendRequestResponse> getSentFriendRequestWithFetch(Long userId) {
-//        List<Friend> friends = friendRepository.findSentFriendRequestsWithFetch(userId);
-//        return friends.stream()
-//                .map(friend -> new SentFriendRequestResponse(
-//                        friend.getReceiveUser().getId(),
-//                        friend.getReceiveUser().getNickname()
-//                ))
-//                .collect(Collectors.toList());
-//    }

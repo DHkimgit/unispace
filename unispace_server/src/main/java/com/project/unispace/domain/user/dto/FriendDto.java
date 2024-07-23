@@ -55,7 +55,9 @@ public class FriendDto {
     public static class AcceptedFriendListResponse{
         private Long friendUserId;
         private String friendUserNickname;
+        private String friendName;
         private FriendStatus friendStatus;
+        private boolean isSameUniversity;
     }
 
     @Getter
