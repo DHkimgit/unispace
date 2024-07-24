@@ -153,7 +153,7 @@ public class ReservationDto {
     @Setter
     @Builder
     @AllArgsConstructor
-    public static class UpcomingReservationResponse {
+    public static class ReservationResponses {
         private Long reservationId;
         private Long userId;
         private Long timeSlotId;

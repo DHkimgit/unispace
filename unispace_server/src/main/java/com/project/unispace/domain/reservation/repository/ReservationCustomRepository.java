@@ -7,4 +7,7 @@ import java.util.List;
 public interface ReservationCustomRepository {
     Reservation findClosestReservationAfterToday(Long userId);
     List<Reservation> findUpcomingReservationsByUserId(Long userId);
+    List<Reservation> findCanceledOrCompletedReservationsByUserId(Long userId);
+    List<Reservation> findRejectedReservationsByUserId(Long userId);
+    List<Reservation> findPendingReservationsByUserId(Long userId);
 }

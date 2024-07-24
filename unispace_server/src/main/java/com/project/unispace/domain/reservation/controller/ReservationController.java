@@ -1,6 +1,7 @@
 package com.project.unispace.domain.reservation.controller;
 
 import com.project.unispace.domain.reservation.dto.ReservationDto;
+import com.project.unispace.domain.reservation.dto.ReservationDto.ReservationResponses;
 import com.project.unispace.domain.reservation.entity.Reservation;
 import com.project.unispace.domain.reservation.service.ReservationService;
 import com.project.unispace.domain.reservation.service.RoomService;
@@ -10,9 +11,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -78,9 +77,51 @@ public class ReservationController {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         User user = userDetails.getUser();
         List<Reservation> upcomingReservations = reservationService.getUpcomingReservations(user.getId());
-
+        //System.out.println("upcomingReservations = " + upcomingReservations.getFirst().getId());
         if (upcomingReservations != null) {
-            List<ReservationDto.UpcomingReservationResponse> result = reservationService.getUpcomingReservationsResponse(upcomingReservations, user.getId());
+            List<ReservationDto.ReservationResponses> result = reservationService.getUpcomingReservationsResponse(upcomingReservations, user.getId());
+            return ResponseEntity.ok(new Result<>(200, "ok", result));
+        } else {
+            return ResponseEntity.ok(new Result<>(200, "ok", null)); // 예약이 없을 경우 null 반환
+        }
+    }
+
+    @GetMapping("/reservation/user/rejected")
+    public ResponseEntity<?> getRejectedReservations(Authentication authentication) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        User user = userDetails.getUser();
+        List<Reservation> rejectedReservations = reservationService.getRejectedReservations(user.getId());
+
+        if (rejectedReservations != null) {
+            List<ReservationDto.ReservationResponses> result = reservationService.getRejectedReservationsResponse(rejectedReservations, user.getId());
+            return ResponseEntity.ok(new Result<>(200, "ok", result));
+        } else {
+            return ResponseEntity.ok(new Result<>(200, "ok", null)); // 예약이 없을 경우 null 반환
+        }
+    }
+
+    @GetMapping("/reservation/user/pending")
+    public ResponseEntity<?> getPendingReservations(Authentication authentication) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        User user = userDetails.getUser();
+        List<Reservation> pendingReservations = reservationService.getPendingReservations(user.getId());
+
+        if (pendingReservations != null) {
+            List<ReservationDto.ReservationResponses> result = reservationService.getPendingReservationsResponse(pendingReservations, user.getId());
+            return ResponseEntity.ok(new Result<>(200, "ok", result));
+        } else {
+            return ResponseEntity.ok(new Result<>(200, "ok", null)); // 예약이 없을 경우 null 반환
+        }
+    }
+
+    @GetMapping("/reservation/user/canceledOrCompleted")
+    public ResponseEntity<?> getCanceledOrCompletedReservations(Authentication authentication) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        User user = userDetails.getUser();
+        List<Reservation> canceledOrCompletedReservations = reservationService.getCanceledOrCompletedReservations(user.getId());
+
+        if (canceledOrCompletedReservations != null) {
+            List<ReservationDto.ReservationResponses> result = reservationService.getCanceledOrCompletedReservationsResponse(canceledOrCompletedReservations, user.getId());
             return ResponseEntity.ok(new Result<>(200, "ok", result));
         } else {
             return ResponseEntity.ok(new Result<>(200, "ok", null)); // 예약이 없을 경우 null 반환

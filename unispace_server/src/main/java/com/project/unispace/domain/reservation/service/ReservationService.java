@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.project.unispace.domain.reservation.dto.ReservationDto.*;
+
 @Service
 @RequiredArgsConstructor
 public class ReservationService {
@@ -134,11 +136,11 @@ public class ReservationService {
                     }
                 }
                 if(!flag){
-                    ReservationDto.AvailableTime availableTime = new ReservationDto.AvailableTime(timeSlot.getId(), timeSlot.getStartTime(), timeSlot.getEndTime());
+                    AvailableTime availableTime = new AvailableTime(timeSlot.getId(), timeSlot.getStartTime(), timeSlot.getEndTime());
                     availableRoom.addAvailableTime(availableTime);
                 }
                 else{
-                    ReservationDto.UnavailableTime unavailableTime = new ReservationDto.UnavailableTime(timeSlot.getId(), timeSlot.getStartTime(), timeSlot.getEndTime());
+                    UnavailableTime unavailableTime = new UnavailableTime(timeSlot.getId(), timeSlot.getStartTime(), timeSlot.getEndTime());
                     availableRoom.addUnavailableTime(unavailableTime);
                 }
             }
@@ -225,10 +227,10 @@ public class ReservationService {
         return reservationRepository.findUpcomingReservationsByUserId(userId);
     }
 
-    public List<UpcomingReservationResponse> getUpcomingReservationsResponse(List<Reservation> reservations, Long userId) {
+    public List<ReservationResponses> getUpcomingReservationsResponse(List<Reservation> reservations, Long userId) {
         return reservations.stream()
                 .map(reservation -> {
-                    return UpcomingReservationResponse.builder()
+                    return ReservationResponses.builder()
                             .userId(userId)
                             .reservationId(reservation.getId())
                             .timeSlotId(reservation.getTimeSlot().getId())
@@ -242,6 +244,77 @@ public class ReservationService {
                             .build();
                 }).collect(Collectors.toList());
     }
+
+    // 사용자의 취소/이용 완료된 예약 내역 반환
+    public List<Reservation> getCanceledOrCompletedReservations(Long userId) {
+        return reservationRepository.findCanceledOrCompletedReservationsByUserId(userId);
+    }
+
+    public List<ReservationResponses> getCanceledOrCompletedReservationsResponse(List<Reservation> reservations, Long userId) {
+        return reservations.stream()
+                .map(reservation -> {
+                    return ReservationResponses.builder()
+                            .userId(userId)
+                            .reservationId(reservation.getId())
+                            .timeSlotId(reservation.getTimeSlot().getId())
+                            .reserveDate(reservation.getReservationDate())
+                            .startTime(reservation.getTimeSlot().getStartTime())
+                            .endTime(reservation.getTimeSlot().getEndTime())
+                            .roomId(reservation.getRoom().getId())
+                            .buildingName(reservation.getRoom().getBuilding().getName())
+                            .roomName(reservation.getRoom().getName())
+                            .member(reservation.getReservationFriends().size())
+                            .build();
+                }).collect(Collectors.toList());
+    }
+
+    // 사용자의 승인 대기중인 예약 내역 반환
+    public List<Reservation> getPendingReservations(Long userId) {
+        return reservationRepository.findPendingReservationsByUserId(userId);
+    }
+
+    public List<ReservationResponses> getPendingReservationsResponse(List<Reservation> reservations, Long userId) {
+        return reservations.stream()
+                .map(reservation -> {
+                    return ReservationResponses.builder()
+                            .userId(userId)
+                            .reservationId(reservation.getId())
+                            .timeSlotId(reservation.getTimeSlot().getId())
+                            .reserveDate(reservation.getReservationDate())
+                            .startTime(reservation.getTimeSlot().getStartTime())
+                            .endTime(reservation.getTimeSlot().getEndTime())
+                            .roomId(reservation.getRoom().getId())
+                            .buildingName(reservation.getRoom().getBuilding().getName())
+                            .roomName(reservation.getRoom().getName())
+                            .member(reservation.getReservationFriends().size())
+                            .build();
+                }).collect(Collectors.toList());
+    }
+
+    // 사용자의 거절된 예약 내역 반환
+    public List<Reservation> getRejectedReservations(Long userId) {
+        return reservationRepository.findRejectedReservationsByUserId(userId);
+    }
+
+    public List<ReservationResponses> getRejectedReservationsResponse(List<Reservation> reservations, Long userId) {
+        return reservations.stream()
+                .map(reservation -> {
+                    return ReservationResponses.builder()
+                            .userId(userId)
+                            .reservationId(reservation.getId())
+                            .timeSlotId(reservation.getTimeSlot().getId())
+                            .reserveDate(reservation.getReservationDate())
+                            .startTime(reservation.getTimeSlot().getStartTime())
+                            .endTime(reservation.getTimeSlot().getEndTime())
+                            .roomId(reservation.getRoom().getId())
+                            .buildingName(reservation.getRoom().getBuilding().getName())
+                            .roomName(reservation.getRoom().getName())
+                            .member(reservation.getReservationFriends().size())
+                            .build();
+                }).collect(Collectors.toList());
+    }
+
+
 
     /*
     * 예약 승인

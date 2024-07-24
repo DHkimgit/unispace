@@ -1,5 +1,5 @@
 package com.project.unispace.domain.reservation.entity;
 
 public enum ReservationStatus {
-    PENDING, ACCEPTED, REJECTED, CANCELED
+    PENDING, ACCEPTED, REJECTED, CANCELED, COMPLETED
 }
