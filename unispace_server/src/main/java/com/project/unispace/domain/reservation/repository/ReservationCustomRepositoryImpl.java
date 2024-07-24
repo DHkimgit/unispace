@@ -22,16 +22,22 @@ public class ReservationCustomRepositoryImpl implements ReservationCustomReposit
         QRoom room = QRoom.room;
 
         LocalDate current = LocalDate.now();
-        LocalTime current_time = LocalTime.now();
+        LocalTime currentTime = LocalTime.now();
+
+        BooleanBuilder whereClause = new BooleanBuilder()
+                .and(reservation.reservedBy.id.eq(userId))
+                .and(reservation.status.eq(ReservationStatus.ACCEPTED))
+                .and(reservation.reservationDate.goe(current));
+
+        if (current.equals(reservation.reservationDate)) {
+            whereClause.and(timeSlot.startTime.after(currentTime));
+        }
 
         return jpaQueryFactory.selectFrom(reservation)
                 .leftJoin(reservation.room, room).fetchJoin()
                 .leftJoin(reservation.timeSlot, timeSlot).fetchJoin()
                 .leftJoin(room.building, building).fetchJoin()
-                .where(reservation.reservedBy.id.eq(userId)
-                        .and(reservation.status.eq(ReservationStatus.ACCEPTED))
-                        .and(reservation.reservationDate.goe(current))
-                        .and(timeSlot.startTime.after(current_time)))
+                .where(whereClause)
                 .orderBy(reservation.reservationDate.asc())
                 .fetchFirst(); // 정렬된 것들 중에서 가장 처음 예약 = 가장 시간이 근접한 예약
     }
@@ -136,5 +142,4 @@ public class ReservationCustomRepositoryImpl implements ReservationCustomReposit
                 .orderBy(reservation.reservationDate.asc())
                 .fetch();
     }
-
 }
