@@ -170,4 +170,14 @@ public class ReservationDto {
         private String roomName;
 
     }
+
+    @Data
+    @Getter
+    @Setter
+    @Builder
+    @AllArgsConstructor
+    public static class ReservationDecision {
+        private Integer reservationId;
+        private String message;
+    }
 }

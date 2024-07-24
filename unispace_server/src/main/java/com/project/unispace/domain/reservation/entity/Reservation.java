@@ -51,6 +51,12 @@ public class Reservation extends BaseEntity {
     @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL)
     private List<ReservationInquiry> inquiries = new ArrayList<>();
 
+    //예약 관리한 관리자 정보
+    private Long reviewAdmin;
+
+    // 예약 승인 관련 메시지
+    private String adminMessage;
+
     //=====생성 메서드=====//
 
     public Reservation(User reservedBy, Room room, LocalDate reservationDate, ReservationTimeSlot timeSlot, ReservationStatus status, String description) {
@@ -60,6 +66,8 @@ public class Reservation extends BaseEntity {
         this.timeSlot = timeSlot;
         this.status = status;
         this.description = description;
+        this.reviewAdmin = null;
+        this.adminMessage = null;
     }
 
     public static Reservation createReservation(User reservedBy, Room room, LocalDate reservationDate, ReservationTimeSlot timeSlot, String description) {
@@ -87,5 +95,22 @@ public class Reservation extends BaseEntity {
     // 예약 가능한 날짜인지 확인
     public void checkAvailable(){
 
+    }
+
+    // 예약 승인(관리자)
+    public void acceptReservation(Long adminId, String adminMessage) {
+        if(this.status.equals(ReservationStatus.PENDING)) {
+            this.status = ReservationStatus.ACCEPTED;
+            this.reviewAdmin = adminId;
+            this.adminMessage = adminMessage;
+        }
+    }
+    // 예약 거절(관리자)
+    public void rejectReservation(Long adminId, String adminMessage) {
+        if(this.status.equals(ReservationStatus.PENDING)) {
+            this.status = ReservationStatus.REJECTED;
+            this.reviewAdmin = adminId;
+            this.adminMessage = adminMessage;
+        }
     }
 }

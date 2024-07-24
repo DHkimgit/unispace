@@ -2,10 +2,13 @@ package com.project.unispace.domain.reservation.controller;
 
 import com.project.unispace.domain.reservation.dto.BuildingDto;
 import com.project.unispace.domain.reservation.dto.PolicyDto;
+import com.project.unispace.domain.reservation.dto.ReservationDto;
+import com.project.unispace.domain.reservation.dto.ReservationDto.ReservationDecision;
 import com.project.unispace.domain.reservation.dto.RoomDto;
 import com.project.unispace.domain.reservation.entity.Building;
 import com.project.unispace.domain.reservation.service.BuildingService;
 import com.project.unispace.domain.reservation.service.PolicyService;
+import com.project.unispace.domain.reservation.service.ReservationService;
 import com.project.unispace.domain.reservation.service.RoomService;
 import com.project.unispace.domain.user.dto.UserDetailsImpl;
 import com.project.unispace.domain.user.entity.User;
@@ -28,6 +31,7 @@ public class ReservationAdminController {
     private final BuildingService buildingService;
     private final RoomService roomService;
     private final PolicyService policyService;
+    private final ReservationService reservationService;
 
     @PostMapping("/admin/building")
     public ResponseEntity<?> createBuilding(@RequestBody BuildingDto.CreateBuilding request, Authentication authentication) {
@@ -71,6 +75,28 @@ public class ReservationAdminController {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         User user = userDetails.getUser();
         return ResponseEntity.ok(new Result<>(200, "ok", roomService.getAllRoomByUniv(user.getUniversity().getId())));
+    }
+
+    /*
+    * 예약 승인
+    * */
+    @PutMapping("/admin/reservation/accept")
+    public ResponseEntity<?> acceptReservation(Authentication authentication, @RequestBody ReservationDecision request) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        User user = userDetails.getUser();
+        reservationService.acceptReservation(request.getReservationId().longValue(), user.getId(), request.getMessage());
+        return ResponseEntity.ok(new Result<>(200, "ok", null));
+    }
+
+    /*
+     * 예약 거절
+     * */
+    @PutMapping("/admin/reservation/reject")
+    public ResponseEntity<?> rejectReservation(Authentication authentication, @RequestBody ReservationDecision request) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        User user = userDetails.getUser();
+        reservationService.rejectReservation(request.getReservationId().longValue(), user.getId(), request.getMessage());
+        return ResponseEntity.ok(new Result<>(200, "ok", null));
     }
 
     @Data

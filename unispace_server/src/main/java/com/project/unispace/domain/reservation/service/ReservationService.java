@@ -240,4 +240,25 @@ public class ReservationService {
                 }).collect(Collectors.toList());
     }
 
+    /*
+    * 예약 승인
+    * */
+    @Transactional
+    public void acceptReservation(Long reservationId, Long adminId, String message) {
+        Reservation reservation = reservationRepository.getReservationById(reservationId);
+        reservation.acceptReservation(adminId, message);
+        System.out.println("reservation = " + reservation.getAdminMessage());
+
+    }
+
+    /*
+     * 예약 거절
+     * */
+    @Transactional
+    public void rejectReservation(Long reservationId, Long adminId, String message) {
+        Reservation reservation = reservationRepository.getReservationById(reservationId);
+        reservation.rejectReservation(adminId, message);
+        reservationRepository.save(reservation);
+    }
+
 }
