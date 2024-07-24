@@ -154,6 +154,7 @@ public class ReservationDto {
     @Builder
     @AllArgsConstructor
     public static class UpcomingReservationResponse {
+        private Long reservationId;
         private Long userId;
         private Long timeSlotId;
 
@@ -168,6 +169,7 @@ public class ReservationDto {
         private Long roomId;
         private String buildingName;
         private String roomName;
+        private Integer member;
 
     }
 

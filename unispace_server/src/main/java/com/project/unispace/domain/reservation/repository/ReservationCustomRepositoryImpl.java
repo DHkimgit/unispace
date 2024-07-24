@@ -28,6 +28,7 @@ public class ReservationCustomRepositoryImpl implements ReservationCustomReposit
                 .leftJoin(reservation.timeSlot, timeSlot).fetchJoin()
                 .leftJoin(room.building, building).fetchJoin()
                 .where(reservation.reservedBy.id.eq(userId)
+                        .and(reservation.status.eq(ReservationStatus.ACCEPTED))
                         .and(reservation.reservationDate.goe(current))
                         .and(timeSlot.startTime.after(current_time)))
                 .orderBy(reservation.reservationDate.asc())
@@ -39,6 +40,7 @@ public class ReservationCustomRepositoryImpl implements ReservationCustomReposit
         QReservation reservation = QReservation.reservation;
         QBuilding building = QBuilding.building;
         QReservationTimeSlot timeSlot = QReservationTimeSlot.reservationTimeSlot;
+        QReservationFriend friends = QReservationFriend.reservationFriend;
         QRoom room = QRoom.room;
 
         LocalDate current = LocalDate.now();
@@ -48,7 +50,9 @@ public class ReservationCustomRepositoryImpl implements ReservationCustomReposit
                 .leftJoin(reservation.room, room).fetchJoin()
                 .leftJoin(reservation.timeSlot, timeSlot).fetchJoin()
                 .leftJoin(room.building, building).fetchJoin()
+                .leftJoin(reservation.reservationFriends, friends).fetchJoin()
                 .where(reservation.reservedBy.id.eq(userId)
+                        .and(reservation.status.eq(ReservationStatus.ACCEPTED))
                         .and(reservation.reservationDate.goe(current))
                         .and(timeSlot.startTime.after(current_time)))
                 .orderBy(reservation.reservationDate.asc())

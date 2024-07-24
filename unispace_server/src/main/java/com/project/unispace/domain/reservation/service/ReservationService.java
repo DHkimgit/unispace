@@ -10,6 +10,7 @@ import com.project.unispace.domain.user.entity.User;
 import com.project.unispace.domain.user.repository.UserRepository;
 import lombok.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -229,6 +230,7 @@ public class ReservationService {
                 .map(reservation -> {
                     return UpcomingReservationResponse.builder()
                             .userId(userId)
+                            .reservationId(reservation.getId())
                             .timeSlotId(reservation.getTimeSlot().getId())
                             .reserveDate(reservation.getReservationDate())
                             .startTime(reservation.getTimeSlot().getStartTime())
@@ -236,6 +238,7 @@ public class ReservationService {
                             .roomId(reservation.getRoom().getId())
                             .buildingName(reservation.getRoom().getBuilding().getName())
                             .roomName(reservation.getRoom().getName())
+                            .member(reservation.getReservationFriends().size())
                             .build();
                 }).collect(Collectors.toList());
     }
