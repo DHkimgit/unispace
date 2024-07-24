@@ -1,6 +1,8 @@
 package com.project.unispace.domain.reservation.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.project.unispace.domain.reservation.entity.InquiryStatus;
+import com.project.unispace.domain.reservation.entity.ReservationStatus;
 import com.project.unispace.domain.user.entity.User;
 import lombok.*;
 
@@ -171,6 +173,8 @@ public class ReservationDto {
         private String roomName;
         private Integer member;
 
+        private ReservationStatus status;
+
     }
 
     @Data
@@ -181,5 +185,29 @@ public class ReservationDto {
     public static class ReservationDecision {
         private Integer reservationId;
         private String message;
+    }
+
+    @Data
+    @Getter
+    @Setter
+    @Builder
+    @AllArgsConstructor
+    public static class InquiryCreateResponse {
+        private Long inquiryId;
+        private Long reservationId;
+        private Long userId;
+        private InquiryStatus status;
+        private String contents;
+    }
+
+    @Data
+    @Getter
+    @Setter
+    @Builder
+    @AllArgsConstructor
+    public static class InquiryCreateRequest {
+        private Long reservationId;
+        private Long userId;
+        private String contents;
     }
 }

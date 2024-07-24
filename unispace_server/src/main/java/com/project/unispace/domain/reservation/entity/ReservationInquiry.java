@@ -32,4 +32,19 @@ public class ReservationInquiry extends BaseEntity {
 
     @Column(length = 1000)
     private String adminReply; // 관리자 답변
+
+    private ReservationInquiry(Reservation reservation, User user, String content, InquiryStatus status) {
+            this.reservation = reservation;
+        this.user = user;
+        this.content = content;
+        this.status = status;
+    }
+
+    public static ReservationInquiry CreateInquiry(Reservation reservation, User user, String content) {
+        return new ReservationInquiry(reservation, user, content, InquiryStatus.PENDING);
+    }
+
+    public void addReply(String adminReply) {
+        this.adminReply = adminReply;
+    }
 }

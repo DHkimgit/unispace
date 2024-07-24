@@ -30,6 +30,7 @@ public class ReservationService {
     private final TimeSlotRepository timeSlotRepository;
     private final UserRepository userRepository;
     private final ReservationPolicyRepository policyRepository;
+    private final ReservationInquiryRepository reservationInquiryRepository;
 
     public reservationResponse makeReservation(reservationRequest request, User reserveUser) {
         Room reserveRoom = roomRepository.findById(request.getRoomId()).orElseThrow();
@@ -241,6 +242,7 @@ public class ReservationService {
                             .buildingName(reservation.getRoom().getBuilding().getName())
                             .roomName(reservation.getRoom().getName())
                             .member(reservation.getReservationFriends().size())
+                            .status(reservation.getStatus())
                             .build();
                 }).collect(Collectors.toList());
     }
@@ -264,6 +266,7 @@ public class ReservationService {
                             .buildingName(reservation.getRoom().getBuilding().getName())
                             .roomName(reservation.getRoom().getName())
                             .member(reservation.getReservationFriends().size())
+                            .status(reservation.getStatus())
                             .build();
                 }).collect(Collectors.toList());
     }
@@ -287,6 +290,7 @@ public class ReservationService {
                             .buildingName(reservation.getRoom().getBuilding().getName())
                             .roomName(reservation.getRoom().getName())
                             .member(reservation.getReservationFriends().size())
+                            .status(reservation.getStatus())
                             .build();
                 }).collect(Collectors.toList());
     }
@@ -310,6 +314,7 @@ public class ReservationService {
                             .buildingName(reservation.getRoom().getBuilding().getName())
                             .roomName(reservation.getRoom().getName())
                             .member(reservation.getReservationFriends().size())
+                            .status(reservation.getStatus())
                             .build();
                 }).collect(Collectors.toList());
     }
@@ -341,6 +346,62 @@ public class ReservationService {
     public void cancelReservation(Long reservationId) {
         Reservation reservation = reservationRepository.getReservationById(reservationId);
         reservation.cancelReservation();
+    }
+
+    /*
+    * 문의 생성
+    * */
+    @Transactional
+    public InquiryCreateResponse createInquiry(InquiryCreateRequest request, User user) {
+        Reservation reservation = reservationRepository.findById(request.getReservationId()).orElseThrow();
+        ReservationInquiry inquiry = ReservationInquiry.CreateInquiry(reservation, user, request.getContents());
+        ReservationInquiry save = reservationInquiryRepository.save(inquiry);
+
+        return InquiryCreateResponse.builder()
+                .inquiryId(save.getId())
+                .userId(user.getId())
+                .reservationId(reservation.getId())
+                .contents(save.getContent())
+                .status(save.getStatus())
+                .build();
+    }
+
+    /*
+    * 상세 예약 정보 반환
+    * */
+    public reservationResponse specificReservationData(Long reservationId) {
+        Reservation saved = reservationRepository.getReservationById(reservationId);
+
+        if(!saved.getReservationFriends().isEmpty()){
+            Set<reservationFriend> friends = saved.getReservationFriends().stream()
+                    .map(reservationFriend -> {
+                        return new reservationFriend(reservationFriend.getFriend().getId(), reservationFriend.getFriend().getNickname());
+                    }).collect(Collectors.toSet());
+            return reservationResponse.builder()
+                    .reserveDate(saved.getReservationDate())
+                    .userId(saved.getReservedBy().getId())
+                    .friends(friends)
+                    .timeSlotId(saved.getTimeSlot().getId())
+                    .startTime(saved.getTimeSlot().getStartTime())
+                    .endTime(saved.getTimeSlot().getEndTime())
+                    .roomId(saved.getRoom().getId())
+                    .buildingName(saved.getRoom().getBuilding().getName())
+                    .roomName(saved.getRoom().getName())
+                    .description(saved.getDescription()).build();
+        }
+        else{
+            return reservationResponse.builder()
+                    .reserveDate(saved.getReservationDate())
+                    .userId(saved.getReservedBy().getId())
+                    .friends(null)
+                    .timeSlotId(saved.getTimeSlot().getId())
+                    .startTime(saved.getTimeSlot().getStartTime())
+                    .endTime(saved.getTimeSlot().getEndTime())
+                    .roomId(saved.getRoom().getId())
+                    .buildingName(saved.getRoom().getBuilding().getName())
+                    .roomName(saved.getRoom().getName())
+                    .description(saved.getDescription()).build();
+        }
     }
 
 }

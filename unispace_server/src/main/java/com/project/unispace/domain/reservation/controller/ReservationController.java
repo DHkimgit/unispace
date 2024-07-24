@@ -36,7 +36,6 @@ public class ReservationController {
     public ResponseEntity<?> checkExistReservation(@PathVariable Integer roomId) {
         System.out.println("roomId = " + roomId);
         return ResponseEntity.ok(new Result<> (200, "ok", reservationService.checkExistReservation(roomId.longValue())));
-        //reservationService.checkExistReservation(roomId.longValue())
     }
 
     @GetMapping("/reservation/check/{roomId}")
@@ -135,6 +134,24 @@ public class ReservationController {
     public ResponseEntity<?> cancelReservation(@PathVariable Integer reservationId) {
         reservationService.cancelReservation(reservationId.longValue());
         return ResponseEntity.ok(new Result<>(200, "ok", null));
+    }
+
+    /*
+    * 거절된 예약 대상으로 관리자에게 문의 전송
+    * */
+    @PostMapping("/reservation/inquiry")
+    public ResponseEntity<?> createReservationInquiry(@RequestBody ReservationDto.InquiryCreateRequest request, Authentication authentication) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        User user = userDetails.getUser();
+        return ResponseEntity.ok(new Result<>(200, "ok", reservationService.createInquiry(request, user)));
+    }
+
+    /*
+    * 상세 예약 정보 반환
+    * */
+    @GetMapping("/reservation/specific/{reservationId}")
+    public ResponseEntity<?> getSpecificReservationData(@PathVariable Integer reservationId) {
+        return ResponseEntity.ok(new Result<>(200, "ok", reservationService.specificReservationData(reservationId.longValue())));
     }
 
     @Data
