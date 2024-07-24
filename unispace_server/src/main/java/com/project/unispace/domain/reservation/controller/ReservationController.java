@@ -87,6 +87,15 @@ public class ReservationController {
         }
     }
 
+    /*
+    * 예약 취소
+    * */
+    @PutMapping("/reservation/cancel/{reservationId}")
+    public ResponseEntity<?> cancelReservation(@PathVariable Integer reservationId) {
+        reservationService.cancelReservation(reservationId.longValue());
+        return ResponseEntity.ok(new Result<>(200, "ok", null));
+    }
+
     @Data
     @AllArgsConstructor
     static class Result<T> {

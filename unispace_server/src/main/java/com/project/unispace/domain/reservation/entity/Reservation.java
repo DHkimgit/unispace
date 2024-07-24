@@ -113,4 +113,9 @@ public class Reservation extends BaseEntity {
             this.adminMessage = adminMessage;
         }
     }
+
+    //예약 취소(사용자)
+    public void cancelReservation() {
+        this.status = ReservationStatus.CANCELED;
+    }
 }
