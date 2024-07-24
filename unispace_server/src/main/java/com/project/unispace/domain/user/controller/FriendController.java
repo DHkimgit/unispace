@@ -47,9 +47,10 @@ public class FriendController {
      * 닉네임으로 사용자를 조회
      * */
     @GetMapping("/friend/search/{nickname}")
-    public ResponseEntity<?> searchUser(@PathVariable String nickname) {
+    public ResponseEntity<?> searchUser(@PathVariable String nickname, Authentication authentication) {
         try{
-            List<UserDto.NickNameSearchResponse> searchResponses = userService.searchUsersByNickname(nickname);
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            List<UserDto.NickNameSearchResponse> searchResponses = userService.searchUsersByNickname(nickname, userDetails.getUser().getId());
             return ResponseEntity.ok(new Result<>(200, "ok", searchResponses));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.ok(new Result<>(409, "error", "사용자가 존재하지 않습니다"));

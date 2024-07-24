@@ -103,11 +103,12 @@ public class UserService {
         return userRepository.findUserByLoginId(loginId);
     }
 
-    public List<UserDto.NickNameSearchResponse> searchUsersByNickname(String nickname) {
+    public List<UserDto.NickNameSearchResponse> searchUsersByNickname(String nickname, Long userId) {
         List<User> users = userRepository.searchUsersByNickname(nickname);
         if(users.isEmpty()) throw new EntityNotFoundException();
         else{
             return users.stream()
+                    .filter(user -> !user.getId().equals(userId))
                     .map(user -> {
                         return new UserDto.NickNameSearchResponse(user.getId(), user.getNickname(),
                                 user.getUniversity().getId(), user.getUniversity().getName());
