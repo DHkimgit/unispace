@@ -21,13 +21,15 @@ public class ReservationCustomRepositoryImpl implements ReservationCustomReposit
         QRoom room = QRoom.room;
 
         LocalDate current = LocalDate.now();
+        LocalTime current_time = LocalTime.now();
 
         return jpaQueryFactory.selectFrom(reservation)
                 .leftJoin(reservation.room, room).fetchJoin()
                 .leftJoin(reservation.timeSlot, timeSlot).fetchJoin()
                 .leftJoin(room.building, building).fetchJoin()
                 .where(reservation.reservedBy.id.eq(userId)
-                        .and(reservation.reservationDate.goe(current)))
+                        .and(reservation.reservationDate.goe(current))
+                        .and(timeSlot.startTime.after(current_time)))
                 .orderBy(reservation.reservationDate.asc())
                 .fetchFirst(); // 정렬된 것들 중에서 가장 처음 예약 = 가장 시간이 근접한 예약
     }
