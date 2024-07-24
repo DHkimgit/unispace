@@ -16,6 +16,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
@@ -57,7 +59,7 @@ public class ReservationController {
         return ResponseEntity.ok(new Result<> (200, "ok", roomService.getThreeRoomByUser(user)));
     }
 
-    @GetMapping("/reservation/latest")
+    @GetMapping("/reservation/user/latest")
     public ResponseEntity<?> getClosestReservationAfterToday(Authentication authentication) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         User user = userDetails.getUser();
@@ -65,6 +67,20 @@ public class ReservationController {
 
         if (response != null) {
             ReservationDto.LatestReservationResponse result = reservationService.getClosestReservationResponse(response, user.getId());
+            return ResponseEntity.ok(new Result<>(200, "ok", result));
+        } else {
+            return ResponseEntity.ok(new Result<>(200, "ok", null)); // 예약이 없을 경우 null 반환
+        }
+    }
+
+    @GetMapping("/reservation/user/upcoming")
+    public ResponseEntity<?> getUpcomingReservations(Authentication authentication) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        User user = userDetails.getUser();
+        List<Reservation> upcomingReservations = reservationService.getUpcomingReservations(user.getId());
+
+        if (upcomingReservations != null) {
+            List<ReservationDto.UpcomingReservationResponse> result = reservationService.getUpcomingReservationsResponse(upcomingReservations, user.getId());
             return ResponseEntity.ok(new Result<>(200, "ok", result));
         } else {
             return ResponseEntity.ok(new Result<>(200, "ok", null)); // 예약이 없을 경우 null 반환

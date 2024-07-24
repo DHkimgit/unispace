@@ -194,14 +194,13 @@ public class ReservationService {
             reservation.addFriend(friend);
         }
         else {
-            System.out.println("쿼리 나가나?");
             if (rp.getRoom().getBuilding().getUniversity() == friend.getUniversity()){
                 reservation.addFriend(friend);
             }
         }
     }
 
-    // 현재 날짜 이후의 가장 최근의 예약 반환
+    // 현재 날짜 이후의 사용자의 가장 최근의 예약 반환
     public LatestReservationResponse getClosestReservationResponse(Reservation reservation, Long userId) {
         return LatestReservationResponse.builder()
                 .userId(userId)
@@ -215,9 +214,30 @@ public class ReservationService {
                 .build();
 
     }
+
     public Reservation getClosestReservation(Long userId) {
         return reservationRepository.findClosestReservationAfterToday(userId);
     }
 
+    // 현재 날짜, 시간 이후 사용자의 모든 예약 내역 반환
+    public List<Reservation> getUpcomingReservations(Long userId) {
+        return reservationRepository.findUpcomingReservationsByUserId(userId);
+    }
+
+    public List<UpcomingReservationResponse> getUpcomingReservationsResponse(List<Reservation> reservations, Long userId) {
+        return reservations.stream()
+                .map(reservation -> {
+                    return UpcomingReservationResponse.builder()
+                            .userId(userId)
+                            .timeSlotId(reservation.getTimeSlot().getId())
+                            .reserveDate(reservation.getReservationDate())
+                            .startTime(reservation.getTimeSlot().getStartTime())
+                            .endTime(reservation.getTimeSlot().getEndTime())
+                            .roomId(reservation.getRoom().getId())
+                            .buildingName(reservation.getRoom().getBuilding().getName())
+                            .roomName(reservation.getRoom().getName())
+                            .build();
+                }).collect(Collectors.toList());
+    }
 
 }
