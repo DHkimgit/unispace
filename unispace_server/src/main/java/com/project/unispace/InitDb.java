@@ -183,7 +183,7 @@ public class InitDb {
             roomRepository.save(roomA3);
             roomRepository.save(roomA4);
 
-            ReservationPolicy policyA3 = ReservationPolicy.createPolicy(roomA3, true, false, 2, LocalTime.of(8, 0, 0), LocalTime.of(20, 0, 0), 3);
+            ReservationPolicy policyA3 = ReservationPolicy.createPolicy(roomA3, true, true, 2, LocalTime.of(8, 0, 0), LocalTime.of(20, 0, 0), 3);
             CollegePolicy cpA3_1 = CollegePolicy.createPolicy(policyA3, college1);
             CollegePolicy cpA3_2 = CollegePolicy.createPolicy(policyA3, college2);
 
