@@ -53,7 +53,7 @@ public class RoomService {
                             room.getReservationPolicy().getMaxReservationHours(), room.getReservationPolicy().getAvailableDays(),
                             timeSlots, collegeRestrictionPolicies, departmentRestrictionPolicies);
                     return new RoomDto.RoomResponse(room.getBuilding().getId(), room.getBuilding().getName(),
-                            room.getName(), room.getDescription(), room.isAvailable(), reservationPolicy);
+                            room.getId(), room.getName(), room.getDescription(), room.isAvailable(), reservationPolicy);
                 }).collect(Collectors.toList());
     }
 
@@ -73,7 +73,7 @@ public class RoomService {
                             room.getReservationPolicy().getMaxReservationHours(), room.getReservationPolicy().getAvailableDays(),
                             timeSlots, collegeRestrictionPolicies, departmentRestrictionPolicies);
                     return new RoomDto.RoomResponse(room.getBuilding().getId(), room.getBuilding().getName(),
-                            room.getName(), room.getDescription(), room.isAvailable(), reservationPolicy);
+                            room.getId(), room.getName(), room.getDescription(), room.isAvailable(), reservationPolicy);
                 }).collect(Collectors.toList());
     }
 
@@ -93,7 +93,7 @@ public class RoomService {
                             room.getReservationPolicy().getMaxReservationHours(), room.getReservationPolicy().getAvailableDays(),
                             timeSlots, collegeRestrictionPolicies, departmentRestrictionPolicies);
                     return new RoomDto.RoomResponse(room.getBuilding().getId(), room.getBuilding().getName(),
-                            room.getName(), room.getDescription(), room.isAvailable(), reservationPolicy);
+                            room.getId(), room.getName(), room.getDescription(), room.isAvailable(), reservationPolicy);
                 }).collect(Collectors.toList());
     }
 
