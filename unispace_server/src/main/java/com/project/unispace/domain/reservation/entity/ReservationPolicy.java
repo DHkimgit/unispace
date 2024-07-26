@@ -97,14 +97,44 @@ public class ReservationPolicy extends BaseEntity {
     //=====비즈니스 로직=====//
 
     // 시설 예약 시작 시간, 한 타임에 최대 예약 가능한 시간, 시설 예약 종료 시간을 이용해서 예약 시간 슬롯 데이터를 생성
+//    public void generateTimeSlot() {
+//        timeSlots.clear();
+//        LocalTime currentTime = openTime;
+//        int maxIterations = 24; // 안전장치: 최대 24시간(1일)로 제한
+//        int iteration = 0;
+//
+//        while ((currentTime.isBefore(reserveCloseTime) || currentTime.equals(reserveCloseTime))
+//                && iteration < maxIterations) {
+//            LocalTime endTime = currentTime.plusHours(maxReservationHours);
+//
+//            if (endTime.isAfter(reserveCloseTime)) {
+//                endTime = reserveCloseTime;
+//            }
+//
+//            if (currentTime.equals(endTime) || endTime.equals(LocalTime.of(0, 0, 0))) break;
+//
+//            ReservationTimeSlot timeSlot = ReservationTimeSlot.createTimeSlot(this, currentTime, endTime);
+//            timeSlots.add(timeSlot);
+//            System.out.println("currentTime = " + currentTime + " endTime = " + endTime + " iter = " + iteration);
+//            currentTime = endTime;
+//            iteration++;
+//
+//        }
+//
+//        timeSlots.sort(Comparator.comparing(ReservationTimeSlot::getStartTime));
+//    }
+
     public void generateTimeSlot() {
         timeSlots.clear();
         LocalTime currentTime = openTime;
-        int maxIterations = 24; // 안전장치: 최대 24시간(1일)로 제한
-        int iteration = 0;
 
-        while ((currentTime.isBefore(reserveCloseTime) || currentTime.equals(reserveCloseTime))
-                && iteration < maxIterations) {
+        if (reserveCloseTime.equals(LocalTime.of(0, 0, 0))) {
+            reserveCloseTime = LocalTime.of(23, 59, 59); // 자정은 하루의 끝으로 설정
+        }
+
+        while ((currentTime.isBefore(reserveCloseTime) || currentTime.equals(reserveCloseTime))) {
+            if (currentTime.plusHours(maxReservationHours).isBefore(currentTime)) break;
+
             LocalTime endTime = currentTime.plusHours(maxReservationHours);
 
             if (endTime.isAfter(reserveCloseTime)) {
@@ -115,19 +145,19 @@ public class ReservationPolicy extends BaseEntity {
 
             ReservationTimeSlot timeSlot = ReservationTimeSlot.createTimeSlot(this, currentTime, endTime);
             timeSlots.add(timeSlot);
-            System.out.println("currentTime = " + currentTime + " endTime = " + endTime + " iter = " + iteration);
             currentTime = endTime;
-            iteration++;
 
+        }
+
+        if(reserveCloseTime.equals(LocalTime.of(23, 59, 59))) {
+            ReservationTimeSlot timeSlot = ReservationTimeSlot.createTimeSlot(this, currentTime, LocalTime.of(0, 0, 0));
+            timeSlots.add(timeSlot);
         }
 
         timeSlots.sort(Comparator.comparing(ReservationTimeSlot::getStartTime));
 
-//        if (iteration >= maxIterations) {
-//            System.out.println("iteration = " + iteration);
-//            throw new IllegalStateException("Too many time slots generated. Please check your input parameters.");
-//        }
     }
+
     public void setDepartmentPolicies(Set<DepartmentPolicy> departmentPolicies) {
         this.departmentPolicies = departmentPolicies;
         this.departmentRestrict = true;
