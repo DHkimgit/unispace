@@ -8,4 +8,5 @@ import java.util.List;
 public interface RoomCustomRepository {
     List<Room> findAllRoomAvailableToUser(User user);
     List<Room> findThreeRoomAvailableToUser(User user);
+    public Room findRoomByIdWithFetchJoin(Long roomId);
 }

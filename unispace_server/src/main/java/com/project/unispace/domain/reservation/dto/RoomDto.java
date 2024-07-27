@@ -33,6 +33,7 @@ public class RoomDto {
     public static class RoomResponse {
         private Long buildingId;
         private String buildingName;
+        private Long roomId;
         private String roomName;
         private String roomDescription;
         private boolean isAvailable;

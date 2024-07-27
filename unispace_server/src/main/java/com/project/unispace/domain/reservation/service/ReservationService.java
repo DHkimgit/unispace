@@ -2,6 +2,7 @@ package com.project.unispace.domain.reservation.service;
 
 import com.project.unispace.domain.reservation.dto.ReservationDto;
 import com.project.unispace.domain.reservation.dto.ReservationDto.*;
+import com.project.unispace.domain.reservation.dto.RoomDto;
 import com.project.unispace.domain.reservation.entity.*;
 import com.project.unispace.domain.reservation.repository.*;
 import com.project.unispace.domain.university.entity.College;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -109,7 +111,9 @@ public class ReservationService {
         List<ExistReservationData> existReservationData = new ArrayList<>();
         List<Reservation> existReservations = reservationRepository.findReservationsBetweenDates(roomId, startDate, endDate);
         for(Reservation reservation : existReservations) {
-            existReservationData.add(new ExistReservationData(reservation.getReservationDate(), reservation.getTimeSlot().getId()));
+            if(reservation.getStatus() == ReservationStatus.ACCEPTED || reservation.getStatus() == ReservationStatus.PENDING || reservation.getStatus() == ReservationStatus.COMPLETED) {
+                existReservationData.add(new ExistReservationData(reservation.getReservationDate(), reservation.getTimeSlot().getId()));
+            }
         }
 
         // timeslot 데이터 불러오기
@@ -148,6 +152,35 @@ public class ReservationService {
             responses.add(availableRoom);
         }
         return responses;
+    }
+
+    public RoomDto.RoomResponse getRoomInformation(Long roomId) {
+        Room room = roomRepository.findRoomByIdWithFetchJoin(roomId);
+        List<RoomDto.CollegeRestrictionPolicy> collegeRestrictionPolicies = new ArrayList<>();
+        List<RoomDto.DepartmentRestrictionPolicy> departmentRestrictionPolicies = new ArrayList<>();
+        if(room.getReservationPolicy().getCollegePolicies() != null){
+            collegeRestrictionPolicies = room.getReservationPolicy().getCollegePolicies().stream()
+                    .map(collegePolicy -> new RoomDto.CollegeRestrictionPolicy(collegePolicy.getCollege().getId(), collegePolicy.getCollege().getName())).toList();
+        }
+
+        if(room.getReservationPolicy().getDepartmentPolicies() != null) {
+            departmentRestrictionPolicies = room.getReservationPolicy().getDepartmentPolicies().stream()
+                    .map(departmentPolicy -> new RoomDto.DepartmentRestrictionPolicy(departmentPolicy.getDepartment().getId(), departmentPolicy.getDepartment().getName())).toList();
+        }
+
+         List<RoomDto.ReservationTimeSlot> timeSlots = room.getReservationPolicy().getTimeSlots().stream()
+                .map(timeSlot -> new RoomDto.ReservationTimeSlot(timeSlot.getId(), timeSlot.getStartTime(), timeSlot.getEndTime()))
+                .sorted(Comparator.comparing(RoomDto.ReservationTimeSlot::getSlotId))
+                .toList();
+
+        RoomDto.ReservationPolicy reservationPolicy = new RoomDto.ReservationPolicy(room.getReservationPolicy().isRequireApproval(),
+                room.getReservationPolicy().getOpenTime(), room.getReservationPolicy().getReserveCloseTime(),
+                room.getReservationPolicy().getMaxReservationHours(), room.getReservationPolicy().getAvailableDays(),
+                timeSlots, collegeRestrictionPolicies, departmentRestrictionPolicies);
+
+        return new RoomDto.RoomResponse(room.getBuilding().getId(), room.getBuilding().getName(),
+                room.getId(), room.getName(), room.getDescription(), room.isAvailable(), reservationPolicy);
+
     }
 
     @Data

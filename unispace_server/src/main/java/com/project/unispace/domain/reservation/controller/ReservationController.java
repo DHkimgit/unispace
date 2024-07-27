@@ -38,9 +38,14 @@ public class ReservationController {
         return ResponseEntity.ok(new Result<> (200, "ok", reservationService.checkExistReservation(roomId.longValue())));
     }
 
-    @GetMapping("/reservation/check/{roomId}")
+    @GetMapping("/reservation/schedule/{roomId}")
     public ResponseEntity<?> getAvailableRoomSchedule(@PathVariable Integer roomId) {
         return ResponseEntity.ok(new Result<> (200, "ok", reservationService.getAvailableRoom(roomId.longValue())));
+    }
+
+    @GetMapping("/reservation/information/{roomId}")
+    public ResponseEntity<?> getAvailableRoomInformation(@PathVariable Integer roomId) {
+        return ResponseEntity.ok(new Result<> (200, "ok", reservationService.getRoomInformation(roomId.longValue())));
     }
 
     @GetMapping("/reservation/rooms")

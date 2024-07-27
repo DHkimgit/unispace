@@ -82,4 +82,26 @@ public class RoomCustomRepositoryImpl implements RoomCustomRepository {
                 .limit(3)
                 .fetch();
     }
+
+    @Override
+    public Room findRoomByIdWithFetchJoin(Long roomId) {
+        QRoom room = QRoom.room;
+        QBuilding building = QBuilding.building;
+        QUniversity university = QUniversity.university;
+        QReservationPolicy reservationPolicy = QReservationPolicy.reservationPolicy;
+        QCollegePolicy collegePolicy = QCollegePolicy.collegePolicy;
+        QDepartmentPolicy departmentPolicy = QDepartmentPolicy.departmentPolicy;
+        QReservationTimeSlot timeSlot = QReservationTimeSlot.reservationTimeSlot;
+
+        return jpaQueryFactory
+                .selectFrom(room)
+                .leftJoin(room.reservationPolicy, reservationPolicy).fetchJoin()
+                .leftJoin(reservationPolicy.collegePolicies, collegePolicy).fetchJoin()
+                .leftJoin(reservationPolicy.departmentPolicies, departmentPolicy).fetchJoin()
+                .leftJoin(reservationPolicy.timeSlots, timeSlot).fetchJoin()
+                .leftJoin(room.building, building).fetchJoin()
+                .leftJoin(building.university, university).fetchJoin()
+                .where(room.id.eq(roomId))
+                .fetchFirst();
+    }
 }
