@@ -62,7 +62,7 @@ public class UserService {
         return userRepository.existsByLoginId(userId);
     }
 
-    public UserDto.AuthenticationResponse authenticate(UserDto.AuthenticationRequest request){
+    public AuthenticationResponse authenticate(AuthenticationRequest request){
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getUserId(),
@@ -71,10 +71,10 @@ public class UserService {
         );
 
         UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsService.loadUserByUsername(request.getUserId());
-        System.out.println("userDetails.getUsername() = " + userDetails.getUsername());
+
         String jwtToken = jwtService.generateToken(userDetails);
-        System.out.println("jwtToken = " + jwtToken);
-        return UserDto.AuthenticationResponse.builder()
+
+        return AuthenticationResponse.builder()
                 .accessToken(jwtToken)
                 .userId(userDetails.getUser().getId()).build();
     }

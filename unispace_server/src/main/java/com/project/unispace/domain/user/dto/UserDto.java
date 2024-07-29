@@ -102,7 +102,6 @@ public class UserDto {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class AuthenticationRequest {
-
         private String userId;
         private String password;
     }

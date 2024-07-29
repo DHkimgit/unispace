@@ -40,7 +40,6 @@ public class PolicyService {
                     Set<DayOfWeek> availableDays = request.getAvailableDays().stream()
                             .map(DayOfWeek::valueOf)
                             .collect(Collectors.toSet());
-                    System.out.println("availableDays = " + availableDays);
                     policy.addAvailableDayPolicy(availableDays);
                     if(!request.getCollegeRestriction().isEmpty()){
                         Set<CollegePolicy> collegePolicies = request.getCollegeRestriction().stream()
@@ -50,7 +49,6 @@ public class PolicyService {
                                 })
                                 .collect(Collectors.toSet());
                         policy.setCollegePolicies(collegePolicies);
-                        System.out.println("collegePolicies = " + collegePolicies);
                     }
 
                     if(!request.getDepartmentRestriction().isEmpty()) {
@@ -61,14 +59,12 @@ public class PolicyService {
                                 })
                                 .collect(Collectors.toSet());
                         policy.setDepartmentPolicies(departmentPolicies);
-                        System.out.println("departmentPolicies = " + departmentPolicies);
                     }
+
                     policy.generateTimeSlot();
-                    System.out.println("before save");
                     reservationPolicyRepository.save(policy);
-                    System.out.println("after save");
                     return policy.getId();
-                }).orElseThrow(() -> new EntityNotFoundException("Nooooo"));
+                }).orElseThrow(() -> new EntityNotFoundException("Room Not Found"));
     }
 
 

@@ -158,6 +158,25 @@ public class InitDb {
             policyA.generateTimeSlot();
             reservationPolicyRepository.save(policyA);
 
+            ReservationPolicy policyA2 = ReservationPolicy.createPolicy(roomA2, true, false, 1, LocalTime.of(8, 0, 0), LocalTime.of(20, 0, 0), 3);
+            CollegePolicy cpA2 = CollegePolicy.createPolicy(policyA2, college1);
+            Set<CollegePolicy> collegePolicies2 = new HashSet<>();
+            collegePolicies2.add(cpA2);
+            policyA2.setCollegePolicies(collegePolicies2);
+            DepartmentPolicy dpA2 = DepartmentPolicy.createPolicy(policyA2, department1);
+            Set<DepartmentPolicy> departmentPolicies2 = new HashSet<>();
+            departmentPolicies.add(dpA2);
+            policyA2.setDepartmentPolicies(departmentPolicies2);
+            Set<DayOfWeek> availableDays2 = new HashSet<>();
+            availableDays2.add(DayOfWeek.MONDAY);
+            availableDays2.add(DayOfWeek.TUESDAY);
+            availableDays2.add(DayOfWeek.WEDNESDAY);
+            availableDays2.add(DayOfWeek.THURSDAY);
+            availableDays2.add(DayOfWeek.FRIDAY);
+            policyA2.addAvailableDayPolicy(availableDays2);
+            policyA2.generateTimeSlot();
+            reservationPolicyRepository.save(policyA2);
+
             ReservationPolicy policyB = ReservationPolicy.createPolicy(roomB1, true, false, 1, LocalTime.of(8, 0, 0), LocalTime.of(20, 0, 0), 3);
             CollegePolicy cpB = CollegePolicy.createPolicy(policyB, college1);
             Set<CollegePolicy> collegePoliciesB = new HashSet<>();
@@ -176,6 +195,25 @@ public class InitDb {
             policyB.addAvailableDayPolicy(availableDaysB);
             policyB.generateTimeSlot();
             reservationPolicyRepository.save(policyB);
+
+            ReservationPolicy policyB2 = ReservationPolicy.createPolicy(roomB2, true, false, 1, LocalTime.of(8, 0, 0), LocalTime.of(20, 0, 0), 3);
+            CollegePolicy cpB2 = CollegePolicy.createPolicy(policyB2, college1);
+            Set<CollegePolicy> collegePoliciesB2 = new HashSet<>();
+            collegePoliciesB2.add(cpB2);
+            policyB2.setCollegePolicies(collegePoliciesB2);
+            DepartmentPolicy dpB2 = DepartmentPolicy.createPolicy(policyB2, department1);
+            Set<DepartmentPolicy> departmentPoliciesB2 = new HashSet<>();
+            departmentPoliciesB.add(dpB2);
+            policyB2.setDepartmentPolicies(departmentPoliciesB2);
+            Set<DayOfWeek> availableDaysB2 = new HashSet<>();
+            availableDaysB2.add(DayOfWeek.MONDAY);
+            availableDaysB2.add(DayOfWeek.TUESDAY);
+            availableDaysB2.add(DayOfWeek.WEDNESDAY);
+            availableDaysB2.add(DayOfWeek.THURSDAY);
+            availableDaysB2.add(DayOfWeek.FRIDAY);
+            policyB2.addAvailableDayPolicy(availableDaysB2);
+            policyB2.generateTimeSlot();
+            reservationPolicyRepository.save(policyB2);
 
             Room roomA3 = Room.createRoom("103호", "강의실", buildingA);
             Room roomA4 = Room.createRoom("104호", "강의실", buildingA);
