@@ -33,6 +33,7 @@ public class ReservationService {
     private final UserRepository userRepository;
     private final ReservationPolicyRepository policyRepository;
     private final ReservationInquiryRepository reservationInquiryRepository;
+    private final ReservationRedisService redisService;
 
     public reservationResponse makeReservation(reservationRequest request, User reserveUser) {
         Room reserveRoom = roomRepository.findById(request.getRoomId()).orElseThrow();
@@ -435,6 +436,60 @@ public class ReservationService {
                     .roomName(saved.getRoom().getName())
                     .description(saved.getDescription()).build();
         }
+    }
+
+    public boolean lockTimeSlot(Long roomId, LocalDate reservationDate, Long timeSlotId, Long userId) {
+        return redisService.lockTimeSlot(
+                roomId.toString(),
+                reservationDate.toString(),
+                timeSlotId.toString(),
+                userId.toString(),
+                300 // 5분 동안 락 유지
+        );
+    }
+
+    public void unlockTimeSlot(Long roomId, LocalDate reservationDate, Long timeSlotId) {
+        redisService.unlockTimeSlot(
+                roomId.toString(),
+                reservationDate.toString(),
+                timeSlotId.toString()
+        );
+    }
+
+    public boolean isTimeSlotLocked(Long roomId, LocalDate reservationDate, Long timeSlotId) {
+        return redisService.getTimeSlotLockOwner(
+                roomId.toString(),
+                reservationDate.toString(),
+                timeSlotId.toString()
+        ) != null;
+    }
+
+    @Transactional
+    public ReservationDto.reservationResponse makeReservationWithLock(ReservationDto.reservationRequest request, User reserveUser) {
+        String lockKey = String.format("%d:%s:%d", request.getRoomId(), request.getReserveDate(), request.getTimeSlotId());
+        if (!redisService.getTimeSlotLockOwner(request.getRoomId().toString(), request.getReserveDate().toString(), request.getTimeSlotId().toString())
+                .equals(reserveUser.getId().toString())) {
+            throw new IllegalStateException("예약 선점 권한이 없습니다.");
+        }
+
+        try {
+            ReservationDto.reservationResponse response = makeReservation(request, reserveUser);
+            unlockTimeSlot(request.getRoomId(), request.getReserveDate(), request.getTimeSlotId());
+            return response;
+        } catch (Exception e) {
+            unlockTimeSlot(request.getRoomId(), request.getReserveDate(), request.getTimeSlotId());
+            throw e;
+        }
+    }
+
+    public boolean renewTimeSlotLock(Long roomId, LocalDate reservationDate, Long timeSlotId, Long userId) {
+        return redisService.renewLock(
+                roomId.toString(),
+                reservationDate.toString(),
+                timeSlotId.toString(),
+                userId.toString(),
+                300 // 5분 연장
+        );
     }
 
 }

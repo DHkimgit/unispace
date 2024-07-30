@@ -210,4 +210,13 @@ public class ReservationDto {
         private Long userId;
         private String contents;
     }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class TimeSlotLockRequest {
+        private Long roomId;
+        private LocalDate reserveDate;
+        private Long timeSlotId;
+    }
 }

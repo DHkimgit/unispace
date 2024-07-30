@@ -159,6 +159,42 @@ public class ReservationController {
         return ResponseEntity.ok(new Result<>(200, "ok", reservationService.specificReservationData(reservationId.longValue())));
     }
 
+    @PostMapping("/reservation/lock")
+    public ResponseEntity<?> lockTimeSlot(@RequestBody ReservationDto.TimeSlotLockRequest request, Authentication authentication) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        User user = userDetails.getUser();
+        boolean locked = reservationService.lockTimeSlot(request.getRoomId(), request.getReserveDate(), request.getTimeSlotId(), user.getId());
+        return ResponseEntity.ok(new Result<>(200, locked ? "시간대 선점 성공" : "이미 선점된 시간대입니다", locked));
+    }
+
+    @PostMapping("/reservation/with-lock")
+    public ResponseEntity<?> makeReservationWithLock(@RequestBody ReservationDto.reservationRequest request, Authentication authentication) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        User user = userDetails.getUser();
+        try {
+            ReservationDto.reservationResponse response = reservationService.makeReservationWithLock(request, user);
+            return ResponseEntity.ok(new Result<>(200, "예약 성공", response));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(new Result<>(400, e.getMessage(), null));
+        }
+    }
+
+    @PostMapping("/reservation/renew-lock")
+    public ResponseEntity<?> renewTimeSlotLock(@RequestBody ReservationDto.TimeSlotLockRequest request, Authentication authentication) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        User user = userDetails.getUser();
+        boolean renewed = reservationService.renewTimeSlotLock(request.getRoomId(), request.getReserveDate(), request.getTimeSlotId(), user.getId());
+        return ResponseEntity.ok(new Result<>(200, renewed ? "시간대 락 갱신 성공" : "시간대 락 갱신 실패", renewed));
+    }
+
+    @PostMapping("/reservation/unlock")
+    public ResponseEntity<?> unlockTimeSlot(@RequestBody ReservationDto.TimeSlotLockRequest request, Authentication authentication) {
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        User user = userDetails.getUser();
+        reservationService.unlockTimeSlot(request.getRoomId(), request.getReserveDate(), request.getTimeSlotId());
+        return ResponseEntity.ok(new Result<>(200, "시간대 락 해제 성공", null));
+    }
+
     @Data
     @AllArgsConstructor
     static class Result<T> {
