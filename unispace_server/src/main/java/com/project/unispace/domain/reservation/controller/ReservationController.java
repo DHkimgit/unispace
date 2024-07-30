@@ -11,11 +11,15 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
+import static com.project.unispace.domain.reservation.dto.ReservationDto.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,9 +28,11 @@ import java.util.List;
 public class ReservationController {
     private final ReservationService reservationService;
     private final RoomService roomService;
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @PostMapping("/reservation")
-    public ResponseEntity<?> makeReservation(@RequestBody ReservationDto.reservationRequest request, Authentication authentication){
+    public ResponseEntity<?> makeReservation(@RequestBody reservationRequest request, Authentication authentication){
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         User user = userDetails.getUser();
         return ResponseEntity.ok(new Result<> (200, "ok", reservationService.makeReservation(request, user)));
@@ -69,7 +75,7 @@ public class ReservationController {
         Reservation response = reservationService.getClosestReservation(user.getId());
 
         if (response != null) {
-            ReservationDto.LatestReservationResponse result = reservationService.getClosestReservationResponse(response, user.getId());
+            LatestReservationResponse result = reservationService.getClosestReservationResponse(response, user.getId());
             return ResponseEntity.ok(new Result<>(200, "ok", result));
         } else {
             return ResponseEntity.ok(new Result<>(200, "ok", null)); // 예약이 없을 경우 null 반환
@@ -83,7 +89,7 @@ public class ReservationController {
         List<Reservation> upcomingReservations = reservationService.getUpcomingReservations(user.getId());
         //System.out.println("upcomingReservations = " + upcomingReservations.getFirst().getId());
         if (upcomingReservations != null) {
-            List<ReservationDto.ReservationResponses> result = reservationService.getUpcomingReservationsResponse(upcomingReservations, user.getId());
+            List<ReservationResponses> result = reservationService.getUpcomingReservationsResponse(upcomingReservations, user.getId());
             return ResponseEntity.ok(new Result<>(200, "ok", result));
         } else {
             return ResponseEntity.ok(new Result<>(200, "ok", null)); // 예약이 없을 경우 null 반환
@@ -97,7 +103,7 @@ public class ReservationController {
         List<Reservation> rejectedReservations = reservationService.getRejectedReservations(user.getId());
 
         if (rejectedReservations != null) {
-            List<ReservationDto.ReservationResponses> result = reservationService.getRejectedReservationsResponse(rejectedReservations, user.getId());
+            List<ReservationResponses> result = reservationService.getRejectedReservationsResponse(rejectedReservations, user.getId());
             return ResponseEntity.ok(new Result<>(200, "ok", result));
         } else {
             return ResponseEntity.ok(new Result<>(200, "ok", null)); // 예약이 없을 경우 null 반환
@@ -111,7 +117,7 @@ public class ReservationController {
         List<Reservation> pendingReservations = reservationService.getPendingReservations(user.getId());
 
         if (pendingReservations != null) {
-            List<ReservationDto.ReservationResponses> result = reservationService.getPendingReservationsResponse(pendingReservations, user.getId());
+            List<ReservationResponses> result = reservationService.getPendingReservationsResponse(pendingReservations, user.getId());
             return ResponseEntity.ok(new Result<>(200, "ok", result));
         } else {
             return ResponseEntity.ok(new Result<>(200, "ok", null)); // 예약이 없을 경우 null 반환
@@ -125,7 +131,7 @@ public class ReservationController {
         List<Reservation> canceledOrCompletedReservations = reservationService.getCanceledOrCompletedReservations(user.getId());
 
         if (canceledOrCompletedReservations != null) {
-            List<ReservationDto.ReservationResponses> result = reservationService.getCanceledOrCompletedReservationsResponse(canceledOrCompletedReservations, user.getId());
+            List<ReservationResponses> result = reservationService.getCanceledOrCompletedReservationsResponse(canceledOrCompletedReservations, user.getId());
             return ResponseEntity.ok(new Result<>(200, "ok", result));
         } else {
             return ResponseEntity.ok(new Result<>(200, "ok", null)); // 예약이 없을 경우 null 반환
@@ -145,7 +151,7 @@ public class ReservationController {
     * 거절된 예약 대상으로 관리자에게 문의 전송
     * */
     @PostMapping("/reservation/inquiry")
-    public ResponseEntity<?> createReservationInquiry(@RequestBody ReservationDto.InquiryCreateRequest request, Authentication authentication) {
+    public ResponseEntity<?> createReservationInquiry(@RequestBody InquiryCreateRequest request, Authentication authentication) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         User user = userDetails.getUser();
         return ResponseEntity.ok(new Result<>(200, "ok", reservationService.createInquiry(request, user)));
@@ -160,7 +166,7 @@ public class ReservationController {
     }
 
     @PostMapping("/reservation/lock")
-    public ResponseEntity<?> lockTimeSlot(@RequestBody ReservationDto.TimeSlotLockRequest request, Authentication authentication) {
+    public ResponseEntity<?> lockTimeSlot(@RequestBody TimeSlotLockRequest request, Authentication authentication) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         User user = userDetails.getUser();
         boolean locked = reservationService.lockTimeSlot(request.getRoomId(), request.getReserveDate(), request.getTimeSlotId(), user.getId());
@@ -168,11 +174,15 @@ public class ReservationController {
     }
 
     @PostMapping("/reservation/with-lock")
-    public ResponseEntity<?> makeReservationWithLock(@RequestBody ReservationDto.reservationRequest request, Authentication authentication) {
+    public ResponseEntity<?> makeReservationWithLock(@RequestBody reservationRequest request, Authentication authentication) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         User user = userDetails.getUser();
         try {
-            ReservationDto.reservationResponse response = reservationService.makeReservationWithLock(request, user);
+            reservationResponse response = reservationService.makeReservationWithLock(request, user);
+
+            messagingTemplate.convertAndSend("/topic/reservations/" + request.getRoomId(),
+                    new ReservationUpdateMessage(request.getRoomId(), request.getReserveDate(), request.getTimeSlotId()));
+
             return ResponseEntity.ok(new Result<>(200, "예약 성공", response));
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body(new Result<>(400, e.getMessage(), null));
@@ -180,7 +190,7 @@ public class ReservationController {
     }
 
     @PostMapping("/reservation/renew-lock")
-    public ResponseEntity<?> renewTimeSlotLock(@RequestBody ReservationDto.TimeSlotLockRequest request, Authentication authentication) {
+    public ResponseEntity<?> renewTimeSlotLock(@RequestBody TimeSlotLockRequest request, Authentication authentication) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         User user = userDetails.getUser();
         boolean renewed = reservationService.renewTimeSlotLock(request.getRoomId(), request.getReserveDate(), request.getTimeSlotId(), user.getId());
@@ -188,7 +198,7 @@ public class ReservationController {
     }
 
     @PostMapping("/reservation/unlock")
-    public ResponseEntity<?> unlockTimeSlot(@RequestBody ReservationDto.TimeSlotLockRequest request, Authentication authentication) {
+    public ResponseEntity<?> unlockTimeSlot(@RequestBody TimeSlotLockRequest request, Authentication authentication) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         User user = userDetails.getUser();
         reservationService.unlockTimeSlot(request.getRoomId(), request.getReserveDate(), request.getTimeSlotId());

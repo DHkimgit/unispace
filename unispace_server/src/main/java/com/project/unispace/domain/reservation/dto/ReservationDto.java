@@ -219,4 +219,13 @@ public class ReservationDto {
         private LocalDate reserveDate;
         private Long timeSlotId;
     }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ReservationUpdateMessage {
+        private Long roomId;
+        private LocalDate reserveDate;
+        private Long timeSlotId;
+    }
 }
