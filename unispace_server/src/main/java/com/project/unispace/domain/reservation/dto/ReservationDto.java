@@ -215,17 +215,62 @@ public class ReservationDto {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class TimeSlotLockRequest {
+        private Long userId;
         private Long roomId;
         private LocalDate reserveDate;
         private Long timeSlotId;
+        private Long currentTimeSlotId;
     }
 
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ReservationUpdateMessage {
+        private String type = "RESERVATION_UPDATE";
         private Long roomId;
         private LocalDate reserveDate;
         private Long timeSlotId;
+
+        public ReservationUpdateMessage(Long roomId, LocalDate reserveDate, Long timeSlotId) {
+            this.type = "RESERVATION_UPDATE";
+            this.roomId = roomId;
+            this.reserveDate = reserveDate;
+            this.timeSlotId = timeSlotId;
+        }
+    }
+    @Data
+    @NoArgsConstructor
+    public static class LockUpdateMessage {
+        private String type;
+        private Long roomId;
+        private Long userId;
+        private LocalDate reserveDate;
+        private Long timeSlotId;
+        private Long formerTimeSlotId;
+        private boolean isLocked;
+        private String message;
+
+        public LockUpdateMessage(String type, Long roomId, Long userId, LocalDate reserveDate, Long timeSlotId, Long formerTimeSlotId, boolean isLocked, String message) {
+            this.type = type;
+            this.roomId = roomId;
+            this.userId = userId;
+            this.reserveDate = reserveDate;
+            this.timeSlotId = timeSlotId;
+            this.formerTimeSlotId = formerTimeSlotId;
+            this.isLocked = isLocked;
+            this.message = message;
+        }
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Getter @Setter
+    public static class ReservationLockResponse {
+        private Long roomId;
+        private LocalDate reserveDate;
+        private Long timeSlotId;
+        private boolean locked;
+        private String message;
     }
 }

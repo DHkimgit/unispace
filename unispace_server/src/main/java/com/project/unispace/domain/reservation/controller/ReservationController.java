@@ -28,8 +28,7 @@ import static com.project.unispace.domain.reservation.dto.ReservationDto.*;
 public class ReservationController {
     private final ReservationService reservationService;
     private final RoomService roomService;
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @PostMapping("/reservation")
     public ResponseEntity<?> makeReservation(@RequestBody reservationRequest request, Authentication authentication){

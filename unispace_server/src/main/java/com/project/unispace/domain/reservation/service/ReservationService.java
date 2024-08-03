@@ -467,10 +467,10 @@ public class ReservationService {
     @Transactional
     public ReservationDto.reservationResponse makeReservationWithLock(ReservationDto.reservationRequest request, User reserveUser) {
         String lockKey = String.format("%d:%s:%d", request.getRoomId(), request.getReserveDate(), request.getTimeSlotId());
-        if (!redisService.getTimeSlotLockOwner(request.getRoomId().toString(), request.getReserveDate().toString(), request.getTimeSlotId().toString())
-                .equals(reserveUser.getId().toString())) {
-            throw new IllegalStateException("예약 선점 권한이 없습니다.");
-        }
+//        if (!redisService.getTimeSlotLockOwner(request.getRoomId().toString(), request.getReserveDate().toString(), request.getTimeSlotId().toString())
+//                .equals(reserveUser.getId().toString())) {
+//            throw new IllegalStateException("예약 선점 권한이 없습니다.");
+//        }
 
         try {
             ReservationDto.reservationResponse response = makeReservation(request, reserveUser);
