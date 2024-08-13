@@ -1,10 +1,12 @@
 package com.project.unispace.domain.reservation.controller;
 
 import com.project.unispace.domain.reservation.dto.ReservationDto;
+import com.project.unispace.domain.reservation.dto.ReservationDto.CountUpdateMessage;
 import com.project.unispace.domain.reservation.dto.ReservationDto.LockUpdateMessage;
 import com.project.unispace.domain.reservation.dto.ReservationDto.ReservationLockResponse;
 import com.project.unispace.domain.reservation.dto.ReservationDto.TimeSlotLockRequest;
 import com.project.unispace.domain.reservation.service.ReservationService;
+import com.project.unispace.domain.reservation.service.ReservationWebSocketConnectionService;
 import com.project.unispace.domain.user.dto.UserDetailsImpl;
 import com.project.unispace.domain.user.dto.UserDto;
 import com.project.unispace.domain.user.entity.User;
@@ -15,6 +17,7 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.annotation.SubscribeMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
@@ -24,6 +27,23 @@ import java.security.Principal;
 public class ReservationWebSocketController {
     private final UserService userService;
     private final ReservationService reservationService;
+    private final ReservationWebSocketConnectionService connectionManager;
+
+    @MessageMapping("/reservations/{roomId}/subscribe")
+    @SendTo("/topic/reservations/{roomId}")
+    public CountUpdateMessage subscribeRoom(@DestinationVariable Long roomId) {
+        int count = connectionManager.subscribe(roomId);
+        System.out.println("count = " + count);
+        return new CountUpdateMessage(roomId, count);
+    }
+
+    @MessageMapping("/reservations/{roomId}/leave")
+    @SendTo("/topic/reservations/{roomId}")
+    public CountUpdateMessage leaveRoom(@DestinationVariable Long roomId) {
+        int count = connectionManager.unsubscribe(roomId);
+        System.out.println("count = " + count);
+        return new CountUpdateMessage(roomId, count);
+    }
 
     @MessageMapping("/reservation/{roomId}/lock")
     @SendTo("/topic/reservations/{roomId}")
@@ -34,7 +54,6 @@ public class ReservationWebSocketController {
         System.out.println("checkLocked = " + checkLocked);
 
         if(checkLocked) { // 선택한 시간대가 이미 선택될 시간대인 경우 true를 반환
-            System.out.println("checkLocked = " + checkLocked);
             return new LockUpdateMessage(
                     "LOCK_UPDATE",
                     roomId,
@@ -47,7 +66,7 @@ public class ReservationWebSocketController {
             );
         }
         else {
-            System.out.println("checkLocked = " + checkLocked);
+            // 시간대 선점
             reservationService.lockTimeSlot(roomId, request.getReserveDate(), request.getTimeSlotId(), user.getId());
 
             return new LockUpdateMessage(
